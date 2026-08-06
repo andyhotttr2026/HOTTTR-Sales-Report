@@ -1,0 +1,31 @@
+name: HOTTTR Creator Tracker
+
+on:
+  schedule:
+    - cron: '0 7 * * *'    # 8am BST
+    - cron: '0 13 * * *'   # 2pm BST
+    - cron: '0 19 * * *'   # 8pm BST
+    - cron: '0 1 * * *'    # 2am BST
+  workflow_dispatch:        # allows manual trigger from GitHub UI
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run tracker
+        env:
+          APIFY_TOKEN:        ${{ secrets.APIFY_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+        run: python creator_tracker.py

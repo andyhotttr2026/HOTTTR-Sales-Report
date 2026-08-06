@@ -1,0 +1,25 @@
+name: HOTTTR Slack Daily Report
+
+on:
+  schedule:
+    # 4AM UTC = 5AM BST (summer) / 4AM GMT (winter)
+    - cron: '0 4 * * *'
+  workflow_dispatch:  # allow manual trigger
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Send Slack daily report
+        env:
+          INFLOWW_API_KEY: ${{ secrets.INFLOWW_API_KEY }}
+          INFLOWW_OID:     ${{ secrets.INFLOWW_OID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python slack_daily_report.py
