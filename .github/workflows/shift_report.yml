@@ -1,0 +1,63 @@
+name: HOTTTR Shift Report
+
+on:
+  schedule:
+    # Manila is UTC+8 (no DST). Report fires at each shift boundary.
+    # Minutes offset off :00 to reduce GitHub cron congestion/drift.
+    - cron: '7 8 * * *'    # 16:00 MNL -> end of Shift 1 (08:00-16:00)
+    - cron: '7 16 * * *'   # 00:00 MNL -> end of Shift 2 (16:00-24:00)
+    - cron: '7 0 * * *'    # 08:00 MNL -> end of Shift 3 (00:00-08:00)
+  workflow_dispatch:       # manual trigger; optionally set which shift
+    inputs:
+      shift:
+        description: 'Force a shift (1, 2, or 3). Leave blank to auto-detect.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: shift-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build report (pull API, generate site + Slack payload)
+        env:
+          INFLOWW_API_KEY: ${{ secrets.INFLOWW_API_KEY }}
+          INFLOWW_OID:     ${{ secrets.INFLOWW_OID }}
+          SHIFT:           ${{ github.event.inputs.shift }}
+        run: python shift_report.py build
+
+      - name: Configure Pages (self-enables on first run)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Send to Slack (after dashboard is live)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python shift_report.py send
