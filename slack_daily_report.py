@@ -19,6 +19,7 @@ BASE          = "https://openapi.infloww.com"
 UA            = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS       = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
 REFUND_STATUSES = {"undo", "refunded", "chargeback", "cancelled", "canceled"}
+PAGES_DAILY   = os.environ.get('PAGES_DAILY', 'https://andyhotttr2026.github.io/HOTTTR-Sales-Report/daily.html')
 
 # ── London time (BST/GMT, DST-aware) ────────────────────────────────────────────
 
@@ -97,6 +98,98 @@ def gather(start_ms, end_ms):
             r["subs"]=r["new"]+r["ren"]; rows[c["name"]]=r
     return rows, tot
 
+# ── HTML dashboard (hosted on GitHub Pages) ────────────────────────────────────
+
+def write_daily_dashboard(rows, tot, prev_net, label, yest, tz):
+    import os
+    def m(c): return f"${c/100:,.2f}"
+    def m0(c): return f"${c/100:,.0f}"
+    subs = tot["new"]+tot["ren"]; fee = tot["gross"]-tot["net"]
+    rr = (tot["ren"]/subs*100) if subs else 0
+    subs_amt = tot["new_amt"]+tot["ren_amt"]
+    dod = ((tot["net"]-prev_net)/prev_net*100) if prev_net else 0
+    bars = sorted(rows.items(), key=lambda x:-x[1]["net"])
+    mx = max((r["net"] for _,r in bars), default=1) or 1
+    bar_html = "".join(
+        f'<div class="bar-row"><div class="bar-name">{n}</div>'
+        f'<div class="bar-track"><div class="bar-fill{" top" if i==0 else ""}" style="width:{r["net"]/mx*100:.1f}%"></div>'
+        f'<div class="bar-val">{m(r["net"])}</div></div></div>'
+        for i,(n,r) in enumerate(bars))
+    tbl = "".join(
+        f'<tr><td class="c-name">{n}</td><td>{r["subs"]}</td><td class="dim">{r["new"]} / {r["ren"]}</td>'
+        f'<td class="num">{m(r["gross"])}</td><td class="num net">{m(r["net"])}</td></tr>'
+        for n,r in bars)
+    dod_cls = "neg" if dod<0 else "pos"; sign = "" if dod<0 else "+"
+    html = f'''<title>Daily Report — {label}</title>
+<style>
+  :root{{--bg:#12141f;--panel:#1a1d2b;--card:#1e2130;--line:#2a2e40;--text:#e8eaf0;--dim:#8890a6;
+    --dimmer:#5a6178;--green:#3ddc84;--cyan:#4db8ff;--red:#ff5c6c;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}}
+  *{{box-sizing:border-box}} body{{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;padding:20px}}
+  .wrap{{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px}}
+  .head{{display:flex;justify-content:space-between;align-items:baseline;padding:2px 4px}}
+  .head h1{{font-size:20px;font-weight:600;margin:0}} .head .sub{{color:var(--dim);font-size:13px}}
+  .kpis{{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}}
+  .kpi{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}}
+  .kpi .lbl{{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}}
+  .kpi .big{{font-size:26px;font-weight:700;margin:6px 0 2px;font-variant-numeric:tabular-nums}}
+  .kpi .foot{{color:var(--dimmer);font-size:11px}} .kpi.hero .big{{color:var(--green)}}
+  .dod-row{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}} .dod-row .kpi .big{{font-size:22px}}
+  .neg{{color:var(--red)}} .pos{{color:var(--green)}}
+  .panel{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}}
+  .panel h2{{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:0 0 16px;font-weight:600}}
+  .bar-row{{display:flex;align-items:center;gap:12px;margin-bottom:9px}}
+  .bar-name{{width:120px;text-align:right;color:var(--dim);font-size:13px;flex-shrink:0}}
+  .bar-track{{flex:1;position:relative;background:#0d0f18;border-radius:4px;height:22px}}
+  .bar-fill{{height:100%;background:var(--cyan);border-radius:4px;min-width:2px}} .bar-fill.top{{background:var(--green)}}
+  .bar-val{{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}}
+  table{{width:100%;border-collapse:collapse}}
+  th{{text-align:left;color:var(--dimmer);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;padding:0 10px 10px;border-bottom:1px solid var(--line)}}
+  th.num,td.num{{text-align:right}}
+  td{{padding:9px 10px;border-bottom:1px solid #20233340;font-variant-numeric:tabular-nums}}
+  td.c-name{{font-weight:500}} td.dim{{color:var(--dim)}} td.net{{color:var(--green);font-weight:600}}
+  tr:last-child td{{border-bottom:none}}
+  @media(max-width:720px){{.kpis{{grid-template-columns:repeat(2,1fr)}}.bar-name{{width:84px}}}}
+</style>
+<div class="wrap">
+  <div class="head"><h1>Daily Report — {label}</h1><div class="sub">{tz} · matches Infloww dashboard · refunds excluded</div></div>
+  <div class="kpis">
+    <div class="kpi hero"><div class="lbl">Net revenue</div><div class="big">{m0(tot["net"])}</div><div class="foot">after OF 20% fee</div></div>
+    <div class="kpi"><div class="lbl">Gross revenue</div><div class="big">{m0(tot["gross"])}</div><div class="foot">before fees</div></div>
+    <div class="kpi"><div class="lbl">OF fee (20%)</div><div class="big">{m0(fee)}</div><div class="foot">platform cut</div></div>
+    <div class="kpi"><div class="lbl">Paid subs</div><div class="big">{subs}</div><div class="foot">{tot["new"]} new · {tot["ren"]} ren</div></div>
+    <div class="kpi"><div class="lbl">Renewal rate</div><div class="big">{rr:.1f}%</div><div class="foot">{tot["ren"]} of {subs} subs</div></div>
+  </div>
+  <div class="dod-row">
+    <div class="kpi"><div class="lbl">Net this day</div><div class="big">{m(tot["net"])}</div></div>
+    <div class="kpi"><div class="lbl">Prior day</div><div class="big">{m(prev_net)}</div></div>
+    <div class="kpi"><div class="lbl">Day over day</div><div class="big {dod_cls}">{sign}{dod:.1f}%</div></div>
+  </div>
+  <div class="panel"><h2>Creator net revenue</h2>{bar_html}</div>
+  <div class="panel"><h2>Creator breakdown</h2>
+    <table><thead><tr><th>Creator</th><th>Subs</th><th>New / Ren</th><th class="num">Gross</th><th class="num">Net</th></tr></thead>
+    <tbody>{tbl}</tbody></table></div>
+  <div style="color:var(--dimmer);font-size:11px;text-align:center">Auto-generated from Infloww · updates daily</div>
+</div>'''
+    os.makedirs("docs/archive", exist_ok=True)
+    with open("docs/daily.html","w",encoding="utf-8") as f: f.write(html)
+    with open(f"docs/archive/daily-{yest:%Y-%m-%d}.html","w",encoding="utf-8") as f: f.write(html)
+    write_index()
+
+def write_index():
+    import os
+    html = '''<title>HOTTTR Reports</title>
+<style>body{margin:0;background:#12141f;color:#e8eaf0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+padding:40px;display:flex;flex-direction:column;gap:16px;align-items:center}
+a{display:block;background:#1e2130;border:1px solid #2a2e40;border-radius:12px;padding:20px 28px;
+color:#4db8ff;text-decoration:none;font-size:18px;font-weight:600;min-width:280px;text-align:center}
+a:hover{border-color:#4db8ff}h1{font-weight:700}.d{color:#8890a6;font-size:13px}</style>
+<h1>📊 HOTTTR Reports</h1>
+<a href="daily.html">💵 Latest Daily Report</a>
+<a href="shift.html">🌙 Latest Shift Report</a>
+<div class="d">Auto-updated · see archive/ for past days</div>'''
+    os.makedirs("docs", exist_ok=True)
+    with open("docs/index.html","w",encoding="utf-8") as f: f.write(html)
+
 # ── Build Slack payload ─────────────────────────────────────────────────────────
 
 def build_payload():
@@ -116,6 +209,9 @@ def build_payload():
     rr = (tot["ren"]/subs*100) if subs else 0
     subs_amt = tot["new_amt"]+tot["ren_amt"]
     dod = ((tot["net"]-prev_net)/prev_net*100) if prev_net else 0
+
+    # generate the hosted HTML dashboard (committed to docs/ and served by GitHub Pages)
+    write_daily_dashboard(rows, tot, prev_net, label, yest, tz)
 
     def m(c): return f"${c/100:,.2f}"
 
@@ -150,7 +246,7 @@ def build_payload():
     blocks = [
         {"type":"header","text":{"type":"plain_text","text":f"📊  HOTTTR Daily Report — {label}","emoji":True}},
         {"type":"context","elements":[{"type":"mrkdwn",
-            "text":f"🇬🇧  {tz} · full day · figures match the Infloww dashboard"}]},
+            "text":f"🇬🇧  {tz} · full day · matches Infloww dashboard · <{PAGES_DAILY}|open visual dashboard →>"}]},
         {"type":"section","text":{"type":"mrkdwn",
             "text":f"*💰  {m(tot['net'])} net*   {emoji} *{dod:+.1f}%* {trend} vs prior day\n"
                    f"_gross {m(tot['gross'])}  ·  OF fee {m(fee)}  ·  prior day {m(prev_net)}_"}},
@@ -173,11 +269,28 @@ def build_payload():
 
 # ── Send ──────────────────────────────────────────────────────────────────────
 
+def post_slack():
+    if not SLACK_WEBHOOK:
+        print("ERROR: SLACK_WEBHOOK_URL not set"); sys.exit(1)
+    with open("slack_payload.json","rb") as f:
+        data = f.read()
+    req = urllib.request.Request(SLACK_WEBHOOK, data=data,
+                                 headers={"Content-Type":"application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            print("Sent daily report.")
+    except urllib.error.HTTPError as ex:
+        print(f"Slack error {ex.code}: {ex.read().decode()}"); sys.exit(1)
+
 def main():
-    dry = len(sys.argv) > 1 and sys.argv[1] == "dry"
-    payload, tot, label = build_payload()
-    if dry:
-        # readable preview
+    # modes: build (write docs/ + payload), send (post payload), dry (preview), all (default)
+    mode = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if mode == "send":
+        post_slack(); return
+    payload, tot, label = build_payload()   # also writes docs/ dashboard
+    with open("slack_payload.json","w",encoding="utf-8") as f:
+        json.dump(payload, f)
+    if mode == "dry":
         for b in payload["blocks"]:
             if b["type"]=="header": print(b["text"]["text"])
             elif b["type"]=="context": print(b["elements"][0]["text"])
@@ -185,15 +298,9 @@ def main():
             elif b["type"]=="section": print(b["text"]["text"].replace("```",""))
             elif b["type"]=="divider": print("-"*48)
         return
-    if not SLACK_WEBHOOK:
-        print("ERROR: SLACK_WEBHOOK_URL not set"); sys.exit(1)
-    req = urllib.request.Request(SLACK_WEBHOOK, data=json.dumps(payload).encode(),
-                                 headers={"Content-Type":"application/json"}, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            print(f"Sent daily report: {label} | net=${tot['net']/100:,.2f}")
-    except urllib.error.HTTPError as ex:
-        print(f"Slack error {ex.code}: {ex.read().decode()}"); sys.exit(1)
+    if mode == "build":
+        print(f"Built daily dashboard + payload: {label} | net=${tot['net']/100:,.2f}"); return
+    post_slack()  # mode == all
 
 if __name__ == "__main__":
     main()

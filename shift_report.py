@@ -20,7 +20,7 @@ from datetime import datetime, timezone, timedelta
 API_KEY       = os.environ.get('INFLOWW_API_KEY')
 OID           = os.environ.get('INFLOWW_OID')
 SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_URL')
-PAGES_URL     = os.environ.get('PAGES_URL', 'https://andyhotttr2026.github.io/HOTTTR-Sales-Report/')
+PAGES_URL     = os.environ.get('PAGES_URL', 'https://andyhotttr2026.github.io/HOTTTR-Sales-Report/shift.html')
 BASE          = "https://openapi.infloww.com"
 UA            = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS       = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
@@ -329,9 +329,27 @@ def write_widget(ctx):
     <table><thead><tr><th>Creator</th><th>Subs</th><th>New/Ren</th><th class="num">PPV</th><th class="num">Tips</th><th class="num">Net</th></tr></thead>
     <tbody>{trows}</tbody></table></div>
 </div>'''
-    os.makedirs("site", exist_ok=True)
-    with open("site/index.html","w",encoding="utf-8") as f: f.write(html)
-    with open(f"site/shift-{s:%Y-%m-%d}-s{ctx['shift_no']}.html","w",encoding="utf-8") as f: f.write(html)
+    os.makedirs("docs/archive", exist_ok=True)
+    with open("docs/shift.html","w",encoding="utf-8") as f: f.write(html)
+    with open(f"docs/archive/shift-{s:%Y-%m-%d}-s{ctx['shift_no']}.html","w",encoding="utf-8") as f: f.write(html)
+    _write_index()
+
+def _write_index():
+    os.makedirs("docs", exist_ok=True)
+    html = ('<title>HOTTTR Reports</title>'
+        '<style>body{margin:0;background:#12141f;color:#e8eaf0;'
+        "font-family:-apple-system,'Segoe UI',Roboto,sans-serif;"
+        'padding:40px;display:flex;flex-direction:column;gap:16px;align-items:center}'
+        'a{display:block;background:#1e2130;border:1px solid #2a2e40;border-radius:12px;'
+        'padding:20px 28px;color:#4db8ff;text-decoration:none;font-size:18px;font-weight:600;'
+        'min-width:280px;text-align:center}a:hover{border-color:#4db8ff}'
+        '.d{color:#8890a6;font-size:13px}</style>'
+        '<h1>📊 HOTTTR Reports</h1>'
+        '<a href="daily.html">💵 Latest Daily Report</a>'
+        '<a href="shift.html">🌙 Latest Shift Report</a>'
+        '<div class="d">Auto-updated · see archive/ for past days</div>')
+    # don't clobber an existing index if the daily one is already richer; simple shared index is fine
+    with open("docs/index.html","w",encoding="utf-8") as f: f.write(html)
 
 # ── Send ──────────────────────────────────────────────────────────────────────
 
