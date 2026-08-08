@@ -45,21 +45,27 @@ jobs:
           SHIFT:           ${{ github.event.inputs.shift }}
         run: python shift_report.py build
 
+      # Pages hosting is best-effort — a Pages failure must NOT block the Slack post.
       - name: Configure Pages (self-enables on first run)
         uses: actions/configure-pages@v5
+        continue-on-error: true
         with:
           enablement: true
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
+        continue-on-error: true
         with:
           path: ./site
 
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+        continue-on-error: true
 
-      - name: Send to Slack (after dashboard is live)
+      # Pages steps above use continue-on-error, so this still runs if only Pages failed
+      # (but is correctly skipped if the build step itself failed — no payload to send).
+      - name: Send to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python shift_report.py send
