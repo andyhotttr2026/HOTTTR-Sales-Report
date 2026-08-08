@@ -332,24 +332,8 @@ def write_widget(ctx):
     os.makedirs("docs/archive", exist_ok=True)
     with open("docs/shift.html","w",encoding="utf-8") as f: f.write(html)
     with open(f"docs/archive/shift-{s:%Y-%m-%d}-s{ctx['shift_no']}.html","w",encoding="utf-8") as f: f.write(html)
-    _write_index()
-
-def _write_index():
-    os.makedirs("docs", exist_ok=True)
-    html = ('<title>HOTTTR Reports</title>'
-        '<style>body{margin:0;background:#12141f;color:#e8eaf0;'
-        "font-family:-apple-system,'Segoe UI',Roboto,sans-serif;"
-        'padding:40px;display:flex;flex-direction:column;gap:16px;align-items:center}'
-        'a{display:block;background:#1e2130;border:1px solid #2a2e40;border-radius:12px;'
-        'padding:20px 28px;color:#4db8ff;text-decoration:none;font-size:18px;font-weight:600;'
-        'min-width:280px;text-align:center}a:hover{border-color:#4db8ff}'
-        '.d{color:#8890a6;font-size:13px}</style>'
-        '<h1>📊 HOTTTR Reports</h1>'
-        '<a href="daily.html">💵 Latest Daily Report</a>'
-        '<a href="shift.html">🌙 Latest Shift Report</a>'
-        '<div class="d">Auto-updated · see archive/ for past days</div>')
-    # don't clobber an existing index if the daily one is already richer; simple shared index is fine
-    with open("docs/index.html","w",encoding="utf-8") as f: f.write(html)
+    from report_common import write_index
+    write_index()
 
 # ── Send ──────────────────────────────────────────────────────────────────────
 
