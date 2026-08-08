@@ -180,50 +180,58 @@ def build():
 
 # ── Slack payload ────────────────────────────────────────────────────────────
 
+def _bar(v, mx, w=14):
+    if mx <= 0: return " " * w
+    frac = v / mx * w; full = int(frac)
+    eighths = " ▏▎▍▌▋▊▉█"  # index 0..8
+    part = eighths[round((frac - full) * 8)]
+    return ("█"*full + (part if part != " " else "")).ljust(w)
+
 def write_slack_payload(ctx):
     tot = ctx["tot"]; rows = ctx["rows"]; hourly = ctx["hourly"]; sh = ctx["uk_start_hour"]
-    col = 20
-    lines = []
-    for r in rows:
-        subs = f"{r['subs']} ({r['new']}n/{r['ren']}r)" if not r["free"] else "free"
-        ppv  = f"  PPV ${r['ppv']/100:,.0f}" if r["ppv"] else ""
-        lines.append(f"{(r['name']+(' [free]' if r['free'] else '')):<{col}} ${r['net']/100:>8.2f}  {subs}{ppv}")
-    lines.append("─"*52)
-    lines.append(f"{'TOTAL':<{col}} ${tot['net']/100:>8.2f}  {tot['subs']} ({tot['new']}n/{tot['ren']}r)")
-    table = "\n".join(lines)
+    def m(c): return f"${c/100:,.2f}"
 
-    # per-hour breakdown: new subs vs renewals separated
-    hlines = [f"{'Hour(UK)':<8}{'New':>4}{'Ren':>5}{'Total':>6}{'PPV$':>9}{'Net$':>9}"]
+    # creator net-sales bar chart
+    active = [r for r in rows if r["net"] > 0]
+    nw = min(max((len(r["name"]) for r in active), default=6), 15)
+    mx = max((r["net"] for r in active), default=1)
+    chart = "\n".join(f"{r['name'][:nw]:<{nw}} {_bar(r['net'],mx)} {m(r['net']):>10}" for r in active)
+    chart += f"\n{'TOTAL':<{nw}} {' '*14} {m(tot['net']):>10}"
+
+    # per-hour breakdown: new vs renewals + net, with a mini sales bar
+    hmax = max((h["net"] for h in hourly), default=1)
+    peak = max(range(8), key=lambda i: hourly[i]["net"])
+    hlines = [f"{'Hour':<6}{'New':>4}{'Ren':>4}  {'Net':>8}  Sales"]
     for i, h in enumerate(hourly):
         hr = f"{(sh+i)%24:02d}:00"
-        hlines.append(f"{hr:<8}{h['new']:>4}{h['ren']:>5}{h['new']+h['ren']:>6}"
-                       f"{h['ppv']/100:>9,.0f}{h['net']/100:>9,.2f}")
-    hlines.append("─"*41)
-    hlines.append(f"{'TOTAL':<8}{tot['new']:>4}{tot['ren']:>5}{tot['subs']:>6}"
-                  f"{tot['ppv']/100:>9,.0f}{tot['net']/100:>9,.2f}")
+        hlines.append(f"{hr:<6}{h['new']:>4}{h['ren']:>4}  {m(h['net']):>8}  {_bar(h['net'],hmax,10)}")
+    hlines.append(f"{'TOT':<6}{tot['new']:>4}{tot['ren']:>4}  {m(tot['net']):>8}")
     hourly_table = "\n".join(hlines)
 
     us, ue = datetime.fromisoformat(ctx["uk_start"]), datetime.fromisoformat(ctx["uk_end"])
     ms, me = datetime.fromisoformat(ctx["start"]),    datetime.fromisoformat(ctx["end"])
-    tz = ctx["tz_label"]
-    hdr = f"🌙 Shift {ctx['shift_no']} Report — {us:%b %d}, {us:%H:%M}–{ue:%H:%M} {tz}"
+    tz = ctx["tz_label"]; rr = ctx["ren_rate"]
+    hdr = f"🌙  Shift {ctx['shift_no']} Report — {us:%b %d}, {us:%H:%M}–{ue:%H:%M} {tz}"
     blocks = [
-        {"type":"header","text":{"type":"plain_text","text":hdr}},
+        {"type":"header","text":{"type":"plain_text","text":hdr,"emoji":True}},
         {"type":"context","elements":[{"type":"mrkdwn",
-            "text":f"UK time ({tz}) · worked {ms:%H:%M}–{me:%H:%M} Manila · <{PAGES_URL}|open dashboard →>"}]},
-        {"type":"divider"},
+            "text":f"🇬🇧  {tz} · worked {ms:%H:%M}–{me:%H:%M} Manila · <{PAGES_URL}|open dashboard →>"}]},
+        {"type":"section","text":{"type":"mrkdwn",
+            "text":f"*💰  {m(tot['net'])} net*   ·   ⏱ {us:%H:%M}–{ue:%H:%M} {tz}\n"
+                   f"_gross {m(tot['gross'])}  ·  peak hour {(sh+peak)%24:02d}:00 at {m(hourly[peak]['net'])}_"}},
         {"type":"section","fields":[
-            {"type":"mrkdwn","text":f"*Net*\n${tot['net']/100:,.2f}"},
-            {"type":"mrkdwn","text":f"*Gross*\n${tot['gross']/100:,.2f}"},
-            {"type":"mrkdwn","text":f"*Subs*\n{tot['subs']} ({tot['new']}n · {tot['ren']}r)"},
-            {"type":"mrkdwn","text":f"*PPV*\n${tot['ppv']/100:,.2f} ({tot['ppv_n']})"},
-            {"type":"mrkdwn","text":f"*Tips*\n${tot['tip']/100:,.2f} ({tot['tip_n']})"},
-            {"type":"mrkdwn","text":f"*Posts*\n${tot['post']/100:,.2f} ({tot['post_n']})"},
+            {"type":"mrkdwn","text":f"*👥 Paid Subs*\n{tot['subs']}  ·  {tot['new']} new / {tot['ren']} ren"},
+            {"type":"mrkdwn","text":f"*🔁 Renewal Rate*\n{rr:.0f}%"},
+            {"type":"mrkdwn","text":f"*💬 PPV*\n{m(tot['ppv'])}  ·  {tot['ppv_n']} sold"},
+            {"type":"mrkdwn","text":f"*💡 Tips*\n{m(tot['tip'])}"},
+            {"type":"mrkdwn","text":f"*⭐ Subs $*\n{m(tot['new_amt']+tot['ren_amt'])}"},
+            {"type":"mrkdwn","text":f"*📝 Posts*\n{m(tot['post'])}"},
         ]},
         {"type":"divider"},
-        {"type":"section","text":{"type":"mrkdwn","text":f"*Hourly Breakdown* (new vs renewals)\n```{hourly_table}```"}},
-        {"type":"section","text":{"type":"mrkdwn","text":f"*Creator Breakdown*\n```{table}```"}},
-        {"type":"context","elements":[{"type":"mrkdwn","text":f"Dashboard: {PAGES_URL}"}]},
+        {"type":"section","text":{"type":"mrkdwn","text":f"*⏱  Hourly — new / ren / sales* ({tz})\n```{hourly_table}```"}},
+        {"type":"section","text":{"type":"mrkdwn","text":f"*💵  Net Sales — by creator*\n```{chart}```"}},
+        {"type":"context","elements":[{"type":"mrkdwn",
+            "text":"Pulled live from Infloww · refunds excluded · net = after 20% OnlyFans fee"}]},
     ]
     with open("slack_payload.json","w",encoding="utf-8") as f:
         json.dump({"blocks":blocks}, f)
