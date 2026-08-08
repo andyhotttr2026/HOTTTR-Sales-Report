@@ -119,37 +119,55 @@ def build_payload():
 
     def m(c): return f"${c/100:,.2f}"
 
-    # copy-paste blocks
     subs_sorted = sorted([(n,r) for n,r in rows.items() if r["subs"]>0], key=lambda x:-x[1]["subs"])
     sales_sorted = sorted([(n,r) for n,r in rows.items() if r["net"]>0], key=lambda x:-x[1]["net"])
+
+    def bar(v, mx, w=14):
+        if mx <= 0: return " " * w
+        frac = v / mx * w; full = int(frac)
+        eighths = " ▏▎▍▌▋▊▉█"  # index 0..8
+        part = eighths[round((frac - full) * 8)]
+        return ("█"*full + (part if part != " " else "")).ljust(w)
+
+    # creator net-revenue bar chart (monospace = renders as a chart in Slack)
+    nw = min(max((len(n) for n,_ in sales_sorted), default=6), 15)
+    mx = max((r["net"] for _,r in sales_sorted), default=1)
+    chart_lines = [f"{n[:nw]:<{nw}} {bar(r['net'],mx)} {m(r['net']):>10}" for n,r in sales_sorted]
+    chart_lines.append(f"{'TOTAL':<{nw}} {' '*14} {m(tot['net']):>10}")
+    chart = "\n".join(chart_lines)
+
+    # revenue mix mini-bars
+    mix = [("PPV",tot["ppv"]),("Subs",subs_amt),("Tips",tot["tip"]),("Posts",tot["post"])]
+    mmx = max((v for _,v in mix), default=1)
+    mix_lines = [f"{lbl:<6} {bar(v,mmx,12)} {v/tot['net']*100:>4.0f}%  {m(v):>9}" for lbl,v in mix if v>0]
+    mix_txt = "\n".join(mix_lines)
+
     subs_txt = "\n".join(f"{n} — {r['subs']} subs ({r['new']} new / {r['ren']} ren)" for n,r in subs_sorted)
     subs_txt += f"\nTotal: {subs} subs ({tot['new']} new / {tot['ren']} ren)"
-    sales_txt = "\n".join(f"{n} — {m(r['net'])}" for n,r in sales_sorted)
-    sales_txt += f"\nTOTAL NET: {m(tot['net'])} | GROSS: {m(tot['gross'])}"
 
-    arrow = "🔻" if dod<0 else "🔺"
+    emoji = "🟢" if dod >= 0 else "🔴"
+    trend = "up" if dod >= 0 else "down"
     blocks = [
-        {"type":"header","text":{"type":"plain_text","text":f"📊 HOTTTR Daily Report — {label}"}},
+        {"type":"header","text":{"type":"plain_text","text":f"📊  HOTTTR Daily Report — {label}","emoji":True}},
         {"type":"context","elements":[{"type":"mrkdwn",
-            "text":f"UK time ({tz}) · full day · matches Infloww dashboard · {arrow} {dod:+.1f}% vs prior day"}]},
-        {"type":"divider"},
+            "text":f"🇬🇧  {tz} · full day · figures match the Infloww dashboard"}]},
+        {"type":"section","text":{"type":"mrkdwn",
+            "text":f"*💰  {m(tot['net'])} net*   {emoji} *{dod:+.1f}%* {trend} vs prior day\n"
+                   f"_gross {m(tot['gross'])}  ·  OF fee {m(fee)}  ·  prior day {m(prev_net)}_"}},
         {"type":"section","fields":[
-            {"type":"mrkdwn","text":f"*Net Revenue*\n{m(tot['net'])}"},
-            {"type":"mrkdwn","text":f"*Gross Revenue*\n{m(tot['gross'])}"},
-            {"type":"mrkdwn","text":f"*OF Fee (20%)*\n{m(fee)}"},
-            {"type":"mrkdwn","text":f"*Paid Subs*\n{subs} ({tot['new']} new · {tot['ren']} ren)"},
-            {"type":"mrkdwn","text":f"*Renewal Rate*\n{rr:.1f}%"},
-        ]},
-        {"type":"section","fields":[
-            {"type":"mrkdwn","text":f"*Subscriptions*\n{m(subs_amt)}"},
-            {"type":"mrkdwn","text":f"*Messages (PPV)*\n{m(tot['ppv'])}"},
-            {"type":"mrkdwn","text":f"*Tips*\n{m(tot['tip'])}"},
-            {"type":"mrkdwn","text":f"*Posts*\n{m(tot['post'])}"},
-            {"type":"mrkdwn","text":f"*Prior Day Net*\n{m(prev_net)}"},
+            {"type":"mrkdwn","text":f"*👥 Paid Subs*\n{subs}  ·  {tot['new']} new / {tot['ren']} ren"},
+            {"type":"mrkdwn","text":f"*🔁 Renewal Rate*\n{rr:.1f}%"},
+            {"type":"mrkdwn","text":f"*💬 Messages (PPV)*\n{m(tot['ppv'])}  ·  {tot['ppv_n']} sold"},
+            {"type":"mrkdwn","text":f"*💡 Tips*\n{m(tot['tip'])}"},
+            {"type":"mrkdwn","text":f"*⭐ Subscriptions*\n{m(subs_amt)}"},
+            {"type":"mrkdwn","text":f"*📝 Posts*\n{m(tot['post'])}"},
         ]},
         {"type":"divider"},
-        {"type":"section","text":{"type":"mrkdwn","text":f"*Paid Subs*\n```{subs_txt}```"}},
-        {"type":"section","text":{"type":"mrkdwn","text":f"*Net Sales*\n```{sales_txt}```"}},
+        {"type":"section","text":{"type":"mrkdwn","text":f"*💵  Net Sales — by creator*\n```{chart}```"}},
+        {"type":"section","text":{"type":"mrkdwn","text":f"*🧩  Revenue mix*\n```{mix_txt}```"}},
+        {"type":"section","text":{"type":"mrkdwn","text":f"*👥  Paid Subs — by creator*\n```{subs_txt}```"}},
+        {"type":"context","elements":[{"type":"mrkdwn",
+            "text":"Pulled live from Infloww · refunds excluded · net = after 20% OnlyFans fee"}]},
     ]
     return {"blocks": blocks}, tot, label
 
