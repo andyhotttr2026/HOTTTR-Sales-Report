@@ -2,11 +2,13 @@ name: HOTTTR Shift Report
 
 on:
   schedule:
-    # Manila is UTC+8 (no DST). Report fires at each shift boundary.
-    # Minutes offset off :00 to reduce GitHub cron congestion/drift.
-    - cron: '7 8 * * *'    # 16:00 MNL -> end of Shift 1 (08:00-16:00)
-    - cron: '7 16 * * *'   # 00:00 MNL -> end of Shift 2 (16:00-24:00)
-    - cron: '7 0 * * *'    # 08:00 MNL -> end of Shift 3 (00:00-08:00)
+    # Manila is UTC+8 (no DST). Report fires just after each shift boundary.
+    # Minute :19 (not :00) dodges GitHub's top-of-hour cron congestion, which
+    # delays/drops runs. GitHub cron is still best-effort; for exact-time
+    # guarantees, trigger via the API from an external scheduler.
+    - cron: '19 8 * * *'    # 16:19 MNL -> end of Shift 1 (08:00-16:00)
+    - cron: '19 16 * * *'   # 00:19 MNL -> end of Shift 2 (16:00-24:00)
+    - cron: '19 0 * * *'    # 08:19 MNL -> end of Shift 3 (00:00-08:00)
   workflow_dispatch:       # manual trigger; optionally set which shift
     inputs:
       shift:

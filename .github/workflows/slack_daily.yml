@@ -2,8 +2,11 @@ name: HOTTTR Slack Daily Report
 
 on:
   schedule:
-    # 4AM UTC = 5AM BST (summer) / 4AM GMT (winter)
-    - cron: '0 4 * * *'
+    # 04:19 UTC = 05:19 BST (summer) / 04:19 GMT (winter).
+    # NOTE: minute :19 (not :00) deliberately dodges GitHub's top-of-hour cron
+    # congestion, which was delaying/dropping runs. GitHub cron is still best-effort;
+    # for exact-time guarantees, trigger via the API from an external scheduler.
+    - cron: '19 4 * * *'
   workflow_dispatch:  # allow manual trigger
 
 jobs:
