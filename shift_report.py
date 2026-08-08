@@ -28,6 +28,8 @@ MNL           = timezone(timedelta(hours=8))
 
 FREE_PAGES = {"Maddy", "Leah Jewel", "Alice Free", "Ella Free", "Alessa Free",
               "Miya Free", "Shy Trans Free", "Miya Rai VIP"}
+# refunds/reversals the Infloww dashboard excludes from net — we exclude them too
+REFUND_STATUSES = {"undo", "refunded", "chargeback", "cancelled", "canceled"}
 
 # ── UK time (for labels; shifts stay defined in Manila) ─────────────────────────
 
@@ -103,15 +105,17 @@ def fetch_txns(creator_id, start_ms, end_ms):
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 def classify(txns):
-    d = {"net":0,"gross":0,"new":0,"ren":0,"ppv":0,"ppv_n":0,"tip":0,"tip_n":0}
+    d = {"net":0,"gross":0,"new":0,"ren":0,"new_amt":0,"ren_amt":0,
+         "ppv":0,"ppv_n":0,"tip":0,"tip_n":0,"post":0,"post_n":0}
     for tx in txns:
         t = tx.get("type","").lower()
         net = int(tx.get("net",0)); gross = int(tx.get("amount",0))
         d["net"] += net; d["gross"] += gross
-        if "subscription" in t and "recurring" not in t: d["new"] += 1
-        elif "recurring" in t: d["ren"] += 1
+        if "subscription" in t and "recurring" not in t: d["new"] += 1; d["new_amt"] += net
+        elif "recurring" in t: d["ren"] += 1; d["ren_amt"] += net
         elif "message" in t: d["ppv"] += net; d["ppv_n"] += 1
         elif "tip" in t: d["tip"] += net; d["tip_n"] += 1
+        elif "post" in t: d["post"] += net; d["post_n"] += 1
     return d
 
 def build():
@@ -128,12 +132,15 @@ def build():
 
     creators = get("/v1/creators?limit=100")["data"]["list"]
     rows = []
-    hourly = [{"new":0,"ren":0,"ppv":0,"ppv_n":0,"tip":0,"net":0} for _ in range(8)]
-    tot = {"net":0,"gross":0,"new":0,"ren":0,"ppv":0,"ppv_n":0,"tip":0,"tip_n":0}
+    hourly = [{"new":0,"ren":0,"ppv":0,"ppv_n":0,"tip":0,"post":0,"net":0} for _ in range(8)]
+    tot = {"net":0,"gross":0,"new":0,"ren":0,"new_amt":0,"ren_amt":0,
+           "ppv":0,"ppv_n":0,"tip":0,"tip_n":0,"post":0,"post_n":0}
     for c in creators:
         txns = fetch_txns(c["id"], start_ms, end_ms)
+        # drop refunds/reversals so net matches the Infloww dashboard
+        txns = [tx for tx in txns if tx.get("status","").lower() not in REFUND_STATUSES]
         d = classify(txns)
-        if d["net"] == 0 and d["new"] == 0 and d["ren"] == 0 and d["ppv_n"] == 0 and d["tip_n"] == 0:
+        if d["net"] == 0 and d["new"] == 0 and d["ren"] == 0 and d["ppv_n"] == 0 and d["tip_n"] == 0 and d["post_n"] == 0:
             continue
         d["name"] = c["name"]; d["free"] = c["name"] in FREE_PAGES
         d["subs"] = d["new"] + d["ren"]
@@ -151,6 +158,7 @@ def build():
             elif "recurring" in t: hb["ren"] += 1
             elif "message" in t: hb["ppv"] += net; hb["ppv_n"] += 1
             elif "tip" in t: hb["tip"] += net
+            elif "post" in t: hb["post"] += net
 
     rows.sort(key=lambda r: -r["net"])
     tot["subs"] = tot["new"] + tot["ren"]
@@ -210,6 +218,7 @@ def write_slack_payload(ctx):
             {"type":"mrkdwn","text":f"*Subs*\n{tot['subs']} ({tot['new']}n · {tot['ren']}r)"},
             {"type":"mrkdwn","text":f"*PPV*\n${tot['ppv']/100:,.2f} ({tot['ppv_n']})"},
             {"type":"mrkdwn","text":f"*Tips*\n${tot['tip']/100:,.2f} ({tot['tip_n']})"},
+            {"type":"mrkdwn","text":f"*Posts*\n${tot['post']/100:,.2f} ({tot['post_n']})"},
         ]},
         {"type":"divider"},
         {"type":"section","text":{"type":"mrkdwn","text":f"*Hourly Breakdown* (new vs renewals)\n```{hourly_table}```"}},
