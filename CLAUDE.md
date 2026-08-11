@@ -1,174 +1,178 @@
-# HOTTTR Creator Tracker
+# HOTTTR Infloww Brain
 
-## For Claude — read this first
-
-You are managing the HOTTTR Creator Tracker system. This is a live production automation that runs twice a day. Here is everything you need to know to manage it confidently without asking the user to explain anything.
-
-When the user asks you to make a change:
-1. Edit the relevant file (`creator_tracker.py` for creator/config changes, `.github/workflows/daily.yml` for schedule changes)
-2. Commit and push to GitHub — the automation picks it up automatically
-3. Confirm what you changed in plain English
-
-Do not ask the user for technical details — everything you need is in this file.
+## Environment
+You are running inside Claude Code with full internet access and the ability to execute Python scripts directly via Bash. Always write and run code directly — do not tell the user to run it themselves unless they ask.
 
 ---
 
-## What this system does
+## Credentials — use these in every script, no need to ask
 
-Runs at **8am and 8pm BST every day** via GitHub Actions. For each of the 9 HOTTTR creators it:
-1. Scrapes Instagram posts, reels, and stories via Apify
-2. Scrapes TikTok videos via Apify
-3. Calculates stats across today / last 7 days / last 30 days
-4. Writes results to Supabase (`creator_stats` table)
-5. Sends a formatted digest to the HOTTTR Marketing Telegram group
+```python
+API_KEY = "sk-1895726036877315RozO3vPcwRVLwy13mDx94ZFTbZNOR7nqxloZOGPF5"
+OID     = "1895726036877315"
+BASE    = "https://openapi.infloww.com"
+UA      = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
+HEADERS = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
+```
 
----
-
-## Architecture
-
-- **Scraping**: Apify with residential proxies — 3 actors: `apify~instagram-scraper`, `apify~instagram-story-scraper`, `clockworks~tiktok-scraper`
-- **Retry logic**: Instagram retries up to 3 times with 60s delay if blocked
-- **Database**: Supabase — `creator_stats` table, one row per creator per platform per run slot
-- **Notifications**: Telegram bot `@HOTTTR_Socials_Trackerbot` → HOTTTR Marketing group
-- **Scheduler**: GitHub Actions cron — `0 7 * * *` (8am BST) and `0 19 * * *` (8pm BST)
+Slack webhook URL: *(paste current webhook URL here after regenerating from Slack)*
 
 ---
 
-## Files
+## Infloww API rules
 
-| File | Purpose |
+- **Amounts are in CENTS** — always divide by 100 for dollars
+- **Timestamps are Unix milliseconds** — `int(datetime(..., tzinfo=tz).timestamp() * 1000)`
+- **Auth** = `Authorization` header, value is key directly, NO "Bearer" prefix
+- **Pagination** = cursor-based, always loop until `hasMore` is false
+
+### Standard fetch function
+```python
+import urllib.request, json
+
+def get(path):
+    req = urllib.request.Request(BASE + path, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
+```
+
+### Key endpoints
+```
+GET /v1/creators?limit=100
+GET /v1/transactions?creatorId=X&startTime=MS&endTime=MS&limit=100
+```
+
+### Transaction types
+| Type | Meaning |
 |------|---------|
-| `creator_tracker.py` | Main script — all scraping, calculation, Supabase write, Telegram send |
-| `.github/workflows/daily.yml` | GitHub Actions schedule and secrets wiring |
-| `supabase_schema.sql` | Database schema (already applied — reference only) |
-| `HANDOVER.md` | All credentials, access links, and account details |
-| `CLAUDE.md` | This file |
+| `subscription` (no "recurring") | New sub |
+| `recurringsubscription` | Renewal |
+| `message` | PPV / paid message |
+| `tip` | Tip |
+
+**Never sum total net for sub earnings** — filter only `subscription` + `recurringsubscription`.
 
 ---
 
-## Credentials (all accounts are shared under HOTTTR agency)
+## Active creator pages (Aug 2026)
 
-Stored as GitHub Actions secrets — used automatically when the workflow runs. Also hardcoded as fallbacks in `creator_tracker.py` for local runs.
+| Creator | ID |
+|---------|-----|
+| Emma Storm VIP | 2211853128433668 |
+| Yasmine | 2347404913344525 |
+| Ella Robinson | 2400360786427934 |
+| Fox Heart | 2238449545969676 |
+| Alice Baby | 1998117335531524 |
+| Leah Jewel | 2286031391096834 |
+| Maddy | 2342180572233763 |
+| Alessa | 2437974986260522 |
+| Miya Rai | 2249045263384591 |
 
-| Secret name | What it's for |
-|-------------|--------------|
-| `APIFY_TOKEN` | Apify scraping API |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot that posts digests |
-| `SUPABASE_URL` | `https://ibhbcdynevvkysbxritv.supabase.co` |
-| `SUPABASE_KEY` | Supabase secret key for database writes |
-
-To update a secret: GitHub repo → Settings → Secrets and variables → Actions → edit the relevant secret.
+> Note: Shy Trans (2472285299015681) returns 400 errors — skip or investigate separately.
 
 ---
 
-## Creators list
+## Timezone rules
 
-Defined in `CREATORS` at the top of `creator_tracker.py`. Edit this to add, remove, or update creators.
+- **Daily report** = Europe/London (BST/GMT) — yesterday midnight to today midnight
+- **Shift analysis** = use the shift's local timezone, convert to ms
+- **Message Dashboard Excel exports** = timestamps in local team timezone
 
+### BST date window (for daily report)
 ```python
-CREATORS = [
-    {"name": "Alice",    "ig": "alicebaby.x1",       "tt": "aliceisherenow0"},
-    {"name": "Anne",     "ig": "loveannetel",         "tt": None},              # no TikTok
-    {"name": "Ella",     "ig": "pretty.little.ella",  "tt": "pretty.little.ella"},
-    {"name": "Emma",     "ig": "scottishemmastorm",   "tt": "scottishemmastorm"},
-    {"name": "FoxHeart", "ig": "foxheart_t",          "tt": "foxheartcosplay"},
-    {"name": "Leah",     "ig": "aleah.keith",         "tt": "aleah.keith1"},
-    {"name": "Maddy",    "ig": "mads111711",          "tt": "maddy17111"},
-    {"name": "Miya",     "ig": "miya_rai_real",       "tt": "miya.rai.real"},
-    {"name": "Yasmine",  "ig": "minavangirl",         "tt": "aussievangirlmina"},
-]
+import pytz
+from datetime import datetime, timedelta
+
+london   = pytz.timezone('Europe/London')
+now      = datetime.now(london)
+yest     = now.date() - timedelta(days=1)
+start_ms = int(london.localize(datetime(yest.year, yest.month, yest.day)).timestamp() * 1000)
+end_ms   = int(london.localize(datetime(now.year, now.month, now.day)).timestamp() * 1000)
 ```
 
-Set `"tt": None` for creators with no TikTok account. After any change, commit and push — the next scheduled run picks it up automatically.
-
----
-
-## Key config (top of creator_tracker.py)
-
+### Custom time window (for shift analysis)
 ```python
-IG_RESULTS_LIMIT = 60   # posts pulled per IG profile — lower to 40 if Apify credits are low
-TT_RESULTS_LIMIT = 60   # videos pulled per TT profile
+from datetime import timezone, timedelta, datetime
+PHT      = timezone(timedelta(hours=8))  # Manila
+start_ms = int(datetime(2026, 8, 7, 0, 0, tzinfo=PHT).timestamp() * 1000)
+end_ms   = int(datetime(2026, 8, 7, 8, 30, tzinfo=PHT).timestamp() * 1000)
 ```
 
 ---
 
-## Schedule (daily.yml)
+## Standard scripts
 
-```yaml
-- cron: '0 7 * * *'    # 8am BST
-- cron: '0 19 * * *'   # 8pm BST
+### Fetch all active creators
+```python
+creators = get("/v1/creators?limit=100")["data"]["list"]
+ACTIVE = {"Emma Storm VIP","Yasmine","Ella Robinson","Fox Heart","Alice Baby",
+          "Leah Jewel","Maddy","Alessa","Miya Rai"}
+creators = [c for c in creators if c["name"] in ACTIVE]
 ```
 
-GitHub Actions cron is always UTC. BST = UTC+1, so 8am BST = 7am UTC.
-
----
-
-## Supabase schema
-
-Table: `creator_stats`
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `run_date` | date | Date of the run |
-| `run_slot` | text | `"morning"` or `"evening"` |
-| `creator_name` | text | e.g. `"Alice"` |
-| `platform` | text | `"instagram"` or `"tiktok"` |
-| `today_count` | int | Posts/reels/videos in last 24h |
-| `today_stories` | int | IG stories (null for TikTok) |
-| `week_count` | int | Content count last 7 days |
-| `week_views` | bigint | |
-| `week_likes` | bigint | |
-| `week_comments` | bigint | |
-| `week_shares` | bigint | TikTok only |
-| `month_count` | int | Content count last 30 days |
-| `month_views` | bigint | |
-| `month_likes` | bigint | |
-
-Unique constraint on `(run_date, run_slot, creator_name, platform)`.
-
----
-
-## How to trigger a manual run
-
-GitHub repo → Actions → HOTTTR Creator Tracker → Run workflow → Run workflow.
-
----
-
-## Troubleshooting guide
-
-**"scrape failed" for all Instagram creators**
-Instagram blocked Apify temporarily. The script retries 3 times automatically. Wait for the next scheduled run — usually fixes itself. If it fails for 2+ consecutive days, swap `IG_ACTOR` in `creator_tracker.py` to `apify~instagram-post-scraper` and push.
-
-**"scrape failed" for one creator only**
-That creator's account likely went private, changed handle, or got banned. Check their profile manually and update the handle in `CREATORS` if needed.
-
-**Nothing arriving in Telegram**
-The bot was removed from the HOTTTR Marketing group, or the token expired. Re-add `@HOTTTR_Socials_Trackerbot` to the group. If the token expired, go to @BotFather → `/mybots` → select the bot → Revoke token → update the `TELEGRAM_BOT_TOKEN` GitHub secret.
-
-**GitHub Actions stopped running automatically**
-GitHub disables scheduled workflows after 60 days of repo inactivity. Fix: make any small change to any file and push — this re-enables the schedule.
-
-**Supabase write errors in the logs**
-Check the `run_slot` column exists in the `creator_stats` table. If missing, run in Supabase SQL Editor:
-```sql
-alter table creator_stats add column run_slot text not null default 'morning';
-drop index creator_stats_unique;
-create unique index creator_stats_unique on creator_stats (run_date, run_slot, creator_name, platform);
+### Fetch transactions for one creator (paginated)
+```python
+def fetch_transactions(creator_id, start_ms, end_ms):
+    results, cursor = [], None
+    while True:
+        url = f"/v1/transactions?creatorId={creator_id}&limit=100&startTime={start_ms}&endTime={end_ms}"
+        if cursor: url += f"&cursor={cursor}"
+        data = get(url)
+        results.extend(data["data"]["list"])
+        cursor = data.get("cursor")
+        if not data.get("hasMore") or not cursor: break
+    return results
 ```
 
-**Apify credits running low**
-Lower `IG_RESULTS_LIMIT` and `TT_RESULTS_LIMIT` from 60 to 40 in `creator_tracker.py` and push.
+### Sub earnings only
+```python
+def calc_subs(txns):
+    new_count = new_net = ren_count = ren_net = 0
+    for tx in txns:
+        t = tx.get("type", "").lower()
+        n = int(tx.get("net", 0))
+        if "subscription" in t and "recurring" not in t:
+            new_count += 1; new_net += n
+        elif "recurring" in t:
+            ren_count += 1; ren_net += n
+    return new_count, new_net, ren_count, ren_net
+```
+
+### Message Dashboard Excel analysis
+```python
+import pandas as pd
+
+def load_dashboard(path):
+    df = pd.read_excel(path, header=0)
+    df.columns = ['Sender','Creator','FansMessage','CreatorMessage',
+                  'SentTime','SentDate','ReplyTime','Price',
+                  'Purchased','Source','Status','SentTo']
+    df['datetime'] = df.apply(lambda r: pd.to_datetime(
+        f"{r['SentDate']} {r['SentTime']}", format="%b %d, %Y %H:%M:%S"), axis=1)
+    df['Price']     = pd.to_numeric(df['Price'], errors='coerce').fillna(0)
+    df['Purchased'] = df['Purchased'].astype(str).str.strip().str.lower() == 'yes'
+    return df
+```
 
 ---
 
-## Common requests and how to handle them
+## GitHub / Automation
 
-| User says | What to do |
-|-----------|-----------|
-| "Add creator X with IG @x and TT @y" | Add line to `CREATORS` in `creator_tracker.py`, commit, push |
-| "Remove creator X" | Delete their line from `CREATORS`, commit, push |
-| "X changed their handle to @y" | Update the `ig` or `tt` value in `CREATORS`, commit, push |
-| "Run it now" | Guide user to Actions → Run workflow, or explain you can't trigger GitHub Actions directly |
-| "Change the schedule" | Update cron lines in `.github/workflows/daily.yml`, commit, push |
-| "Why did it fail?" | Check GitHub Actions logs for the failed run and explain the error in plain English |
-| "Lower the Apify usage" | Reduce `IG_RESULTS_LIMIT` and `TT_RESULTS_LIMIT` to 40 in `creator_tracker.py`, commit, push |
+- **Repo:** `https://github.com/andyhotttr2026/HOTTTR-Sales-Report`
+- **Daily Slack report:** runs via GitHub Actions at 4AM UTC (~5AM BST, ~12PM Manila) — GitHub scheduling can drift up to 1 hour
+- **Manual trigger:** GitHub → Actions → HOTTTR Slack Daily Report → Run workflow
+- **Secrets in repo:** `INFLOWW_API_KEY`, `INFLOWW_OID`, `SLACK_WEBHOOK_URL`
+
+---
+
+## Common requests
+
+| Ask | What to do |
+|-----|-----------|
+| Pull yesterday's revenue | BST date window, loop all active creators, sum gross/net/subs |
+| Analyse a specific shift | Set start/end in correct timezone, fetch + break down by hour and creator |
+| Sub earnings only | Filter `subscription` + `recurringsubscription` only |
+| PPV revenue only | Filter `message` type |
+| Per-creator hourly grid | Loop creators × hourly windows |
+| Build a shift report for AJ | Dark HTML dashboard artifact: KPI cards, hourly bar chart, creator PPV table, sub heatgrid, key factors, action items |
+| Send to Slack | POST JSON payload to `SLACK_WEBHOOK_URL` using `urllib.request` |
