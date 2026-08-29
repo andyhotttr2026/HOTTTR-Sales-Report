@@ -5,11 +5,17 @@ You are running inside Claude Code with full internet access and the ability to 
 
 ---
 
-## Credentials — use these in every script, no need to ask
+## Credentials — read from the environment, NEVER hardcode
+
+**This repository is public.** Nothing secret goes in a tracked file. Scripts read
+from environment variables; GitHub Actions supplies them from repo Secrets
+(`INFLOWW_API_KEY`, `INFLOWW_OID`, `SLACK_WEBHOOK_URL`). Locally they come from
+the untracked `.env`.
 
 ```python
-API_KEY = "sk-1895726036877315RozO3vPcwRVLwy13mDx94ZFTbZNOR7nqxloZOGPF5"
-OID     = "1895726036877315"
+import os
+API_KEY = os.environ["INFLOWW_API_KEY"]
+OID     = os.environ["INFLOWW_OID"]
 BASE    = "https://openapi.infloww.com"
 UA      = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}

@@ -1,0 +1,70 @@
+name: HOTTTR OFMOS Check-in
+
+on:
+  schedule:
+    # Target: 06:00 UK, Monday / Wednesday / Friday.
+    # GitHub cron is fixed UTC, so we fire twice and let the script decide:
+    # ofmos_report.py exits immediately unless local UK time is the 06:00 hour.
+    #   05:07 UTC = 06:07 BST (summer)  -> runs Mar-Oct, skipped in winter
+    #   06:07 UTC = 06:07 GMT (winter)  -> runs Oct-Mar, skipped in summer
+    # Minute :07 rather than :00 — top-of-hour runs get delayed or dropped.
+    - cron: '7 5 * * 1,3,5'
+    - cron: '7 6 * * 1,3,5'
+  workflow_dispatch:        # manual runs bypass the 06:00 guard
+
+permissions:
+  contents: write           # to commit the generated report into docs/ for Pages
+
+concurrency:
+  group: hotttr-reports     # shared with daily + shift so docs/ pushes don't race
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build report (pull Infloww, generate docs/ofmos.html)
+        env:
+          INFLOWW_API_KEY: ${{ secrets.INFLOWW_API_KEY }}
+          INFLOWW_OID:     ${{ secrets.INFLOWW_OID }}
+          OFMOS_FORCE:     ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+        run: python ofmos_report.py build
+
+      # A4 PDF for sending to the consultant. Best-effort — Chrome availability
+      # on the runner image is not a guarantee, and a PDF failure must not stop
+      # the HTML from publishing or the Slack post below.
+      - name: Render PDF
+        continue-on-error: true
+        run: |
+          if [ ! -f docs/ofmos.html ]; then echo "no report this run — skipping PDF"; exit 0; fi
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium-browser || true)
+          if [ -z "$CHROME" ]; then echo "no Chrome on runner — skipping PDF"; exit 0; fi
+          "$CHROME" --headless --disable-gpu --no-sandbox --no-pdf-header-footer \
+            --print-to-pdf="docs/ofmos.pdf" "file://$PWD/docs/ofmos.html"
+          ls -la docs/ofmos.pdf
+
+      - name: Publish to docs/
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --staged --quiet; then echo "no report changes"; else
+            git commit -m "Update OFMOS check-in [skip ci]"
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+
+      - name: Send to Slack
+        env:
+          INFLOWW_API_KEY:   ${{ secrets.INFLOWW_API_KEY }}
+          INFLOWW_OID:       ${{ secrets.INFLOWW_OID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          OFMOS_FORCE:       ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+        run: python ofmos_report.py send
