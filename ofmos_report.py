@@ -86,9 +86,15 @@ def fetch(cid, s, e):
 if not API_KEY or not OID:
     print("ERROR: INFLOWW_API_KEY / INFLOWW_OID not set"); sys.exit(1)
 
-PULL_FROM = min(B_START, MONTH_START)
+# 90 days back so the unlock-price trend has a baseline. This is the slowest part
+# of the run; everything else needs only ~30 days.
+W90_START = TODAY - timedelta(days=90)
+PULL_FROM = min(B_START, MONTH_START, W90_START)
 creators  = get("/v1/creators?limit=100")["data"]["list"]
 
+BANDS = [(0,2000,"under $20"),(2000,4000,"$20 – 40"),(4000,6000,"$40 – 60"),
+         (6000,10000,"$60 – 100"),(10000,16000,"$100 – 160"),(16000,10**9,"$160+")]
+band = defaultdict(lambda: defaultdict(lambda: {"n": 0, "net": 0}))
 day = defaultdict(lambda: {"net": 0, "new": 0, "ren": 0, "ppv": 0, "ppvn": 0})
 cr  = defaultdict(lambda: defaultdict(lambda: {"net": 0, "new": 0}))
 skipped = []
@@ -107,7 +113,12 @@ for c in creators:
         if "subscription" in ty and "recurring" not in ty:
             day[d]["new"] += 1; cr[c["name"]][d]["new"] += 1
         elif "recurring" in ty: day[d]["ren"] += 1
-        elif "message" in ty:   day[d]["ppv"] += n; day[d]["ppvn"] += 1
+        elif "message" in ty:
+            day[d]["ppv"] += n; day[d]["ppvn"] += 1
+            for lo, hi, lbl in BANDS:
+                if lo <= n < hi:
+                    band[d][lbl]["n"] += 1; band[d][lbl]["net"] += n
+                    break
 
 def rng(d1, d2):
     o = defaultdict(int)
@@ -129,6 +140,37 @@ mdays = len([d for d in day if MONTH_START <= d <= A_END])
 
 def M(c):  return f"${c/100:,.2f}"
 def M0(c): return f"${c/100:,.0f}"
+
+# ── Unlock-price trend: rolling 30 / prior 30 / 60 / 90 ───────────────────────
+U30  = rng(TODAY - timedelta(days=30), A_END)
+U30P = rng(TODAY - timedelta(days=60), TODAY - timedelta(days=31))
+U60  = rng(TODAY - timedelta(days=60), A_END)
+U90  = rng(TODAY - timedelta(days=90), A_END)
+def avg(w): return w["ppv"] / w["ppvn"] if w["ppvn"] else 0
+def bandsum(d1, d2):
+    o = {lbl: {"n": 0, "net": 0} for _, _, lbl in BANDS}
+    for d, m in band.items():
+        if d1 <= d <= d2:
+            for lbl, v in m.items():
+                o[lbl]["n"] += v["n"]; o[lbl]["net"] += v["net"]
+    return o
+BA = bandsum(TODAY - timedelta(days=30), A_END)
+BP = bandsum(TODAY - timedelta(days=60), TODAY - timedelta(days=31))
+
+brows = ""
+for _lo, _hi, _lbl in BANDS:
+    a, p = BA[_lbl], BP[_lbl]
+    if p["n"]:
+        _g = (a["n"] - p["n"]) / p["n"] * 100
+        _pill = f'<span class="pill {"up" if _g >= 0 else "dn"}">{_g:+.0f}%</span>'
+    else:
+        _pill = "—"
+    brows += (f'<tr><td class="k">{_lbl}</td><td class="n">{a["n"]:,}</td>'
+              f'<td class="n">{a["n"]/U30["ppvn"]*100:.1f}%</td>'
+              f'<td class="n">{M(a["net"])}</td>'
+              f'<td class="n dim">{p["n"]:,}</td>'
+              f'<td class="n dim">{p["n"]/U30P["ppvn"]*100:.1f}%</td>'
+              f'<td class="c">{_pill}</td></tr>')
 
 # ── Creator movement, ranked by contribution to the change ────────────────────
 
@@ -215,6 +257,9 @@ td.k{text-align:left;font-weight:600}td.c{text-align:center}
 .note{background:#fff5f9;border-left:3px solid #e8629a;padding:9px 12px;border-radius:0 6px 6px 0;
       margin:10px 0;font-size:8.8pt}
 .note b{color:#c23f74}
+.note.grey{background:#f8f6f7;border-left-color:#c9bfc6}
+.note.grey b{color:#6c626a}
+tr.hl td{background:#fff8fb;font-weight:700}
 .alert{background:#fffaf0;border:1.5px solid #e0b45a;border-left:4px solid #d9932a;
        border-radius:6px;padding:10px 13px;margin:12px 0;font-size:8.9pt;color:#6b5320}
 .alert b{color:#a86c12}
@@ -236,7 +281,7 @@ h2{page-break-after:avoid;break-after:avoid}
   .page:last-child{border-bottom:none}.foot{position:static;margin-top:14px}}
 """
 
-TP = 5
+TP = 6
 def bar(n): return (f'<div class="bar"><div class="wm">HOTTTR<i>.</i></div>'
                     f'<div class="pg">OFMOS {KIND} &nbsp;·&nbsp; {n} / {TP}</div></div>')
 def foot(): return (f'<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · '
@@ -338,6 +383,47 @@ P2 = f"""<div class="page">{bar(2)}
 <table><thead><tr><th>Creator</th><th>Last 7d</th><th>Prior 7d</th><th>Change</th><th>Share</th>
 <th>New subs</th></tr></thead><tbody>{crows}</tbody></table>
 {contrib_block}
+{foot()}</div>
+
+<div class="page">{bar(3)}
+<h1>Unlock price trend</h1>
+<div class="sub">Average price of a single PPV unlock, over rolling windows ending {fmt(A_END)}.
+Net of the OnlyFans 20%; the price the fan pays is 1.25 times these figures.</div>
+
+<h2>Rolling windows</h2>
+<table><thead><tr><th>Window</th><th>Unlocks</th><th>PPV net</th><th>Average unlock</th>
+<th>Last 30d vs this</th></tr></thead><tbody>
+{"".join(
+  f'<tr{" class=hl" if lbl.startswith("Last 30") else ""}><td class="k">{lbl}</td>'
+  f'<td class="n">{w["ppvn"]:,}</td><td class="n">{M(w["ppv"])}</td>'
+  f'<td class="n"><b>{M(avg(w))}</b></td>'
+  f'<td class="n">{"—" if lbl.startswith("Last 30") else f"{(avg(U30)-avg(w))/avg(w)*100:+.1f}%"}</td></tr>'
+  for lbl, w in [("Last 30 days", U30), ("Prior 30 days", U30P),
+                 ("Rolling 60 days", U60), ("Rolling 90 days", U90)])}
+</tbody></table>
+
+<div class="note"><b>Price rose {(avg(U30)-avg(U30P))/avg(U30P)*100:.1f}% and volume fell
+{abs((U30["ppvn"]-U30P["ppvn"])/U30P["ppvn"]*100):.1f}%.</b>
+The average unlock went {M(avg(U30P))} to {M(avg(U30))} against the prior 30 days, and sits
+{(avg(U30)-avg(U90))/avg(U90)*100:+.1f}% above the 90-day baseline of {M(avg(U90))}. Over the same
+period unlocks fell from {U30P["ppvn"]:,} to {U30["ppvn"]:,} and PPV revenue fell
+{abs((U30["ppv"]-U30P["ppv"])/U30P["ppv"]*100):.1f}%, from {M(U30P["ppv"])} to {M(U30["ppv"])}.
+The higher price has not so far offset the lower volume.</div>
+
+<h2>Where the price sits <span>unlocks by price band, net</span></h2>
+<table><thead><tr><th>Band</th><th>Last 30d</th><th>Share</th><th>PPV net</th>
+<th>Prior 30d</th><th>Share</th><th>Change</th></tr></thead><tbody>
+{brows}
+</tbody></table>
+
+<div class="note"><b>The top band is doing the work.</b>
+Unlocks at $160 and above went from {BP["$160+"]["n"]:,} to {BA["$160+"]["n"]:,}. They are
+{BA["$160+"]["n"]/U30["ppvn"]*100:.1f}% of all unlocks and {BA["$160+"]["net"]/U30["ppv"]*100:.1f}%
+of PPV revenue. Every other band fell in both count and share of revenue.</div>
+
+<div class="note grey"><b>Comparison caveat.</b> Creators who left during August lost their
+transaction history in Infloww. The prior-30 and 90-day windows therefore exclude them entirely,
+so this compares against a roster that no longer fully exists.</div>
 {foot()}</div>"""
 
 def bullets(key, empty_msg):
@@ -357,7 +443,7 @@ focus_html = (f'<p><b>{esc(focus.get("what",""))}</b></p>'
              '<div class="todo"><b>NEEDS INPUT:</b> the single focus for the coming week, why it is the ' \
              'one thing, and what result it should produce.</div>'
 
-P3 = f"""<div class="page">{bar(3)}
+P3 = f"""<div class="page">{bar(4)}
 <h1>Progress</h1>
 <div class="sub">Written sections — entered by the team, not generated.
 They describe the calendar week beginning <b>{fmt(NOTES_WEEK)}</b>.</div>
@@ -378,7 +464,7 @@ q_html = "".join(f'<div class="q"><div class="lbl"><span class="tag">{esc(q.get(
                  f'<div>{esc(q.get("q",""))}</div></div>' for q in qs) or \
          '<div class="todo"><b>NEEDS INPUT:</b> tagged questions for the consultant.</div>'
 
-P4 = f"""<div class="page">{bar(4)}
+P4 = f"""<div class="page">{bar(5)}
 <h1>Problems &amp; input needed</h1>
 <div class="sub">Written sections — entered by the team, not generated.</div>
 <h2>Biggest blocker</h2>
@@ -388,7 +474,7 @@ P4 = f"""<div class="page">{bar(4)}
 {bullets("stuck", "things that MIGHT be a problem but cannot be proven with current data. These are as valuable as the provable ones.")}
 {foot()}</div>
 
-<div class="page">{bar(5)}
+<div class="page">{bar(6)}
 <h1>Input needed, continued</h1>
 <div class="sub">What would help most from the consultant's side.</div>
 <h2>Video ideas that would help us</h2>

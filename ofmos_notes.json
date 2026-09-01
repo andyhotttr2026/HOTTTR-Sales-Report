@@ -4,43 +4,42 @@
   "week_of": "2026-08-24",
 
   "done": [
-    "Average unlock price reached its highest level of the month, with PPV rising to over 80% of revenue.",
-    "Renewal rate improved week on week — retention is strengthening even as new intake softens.",
-    "Second-tier creators grew, broadening revenue away from the top account.",
-    "Two new creators onboarded, both already producing revenue.",
-    "Daily and per-shift revenue reporting now generates and publishes automatically."
+    "Built per-chatter performance measurement for the first time. We can now see PPVs sent, unlock rate, fans chatted, message volume and response time for every chatter, per creator, per day. This was our stated blocker last week and it is now closed.",
+    "Used it immediately to locate the largest single movement in the business: one chatter's output on our top creator fell $6,115 week on week, driven by fewer and lower-priced offers rather than absence. Message volume and fans contacted both rose over the same period.",
+    "Second-tier creators grew again. Fox Heart +90% and Ella Robinson +35% week on week, together adding $3,543.",
+    "Automated the reporting itself. Daily, per-shift and this weekly check-in now generate and publish without manual work."
   ],
 
   "not_done": [
-    "Acquisition was not addressed. New subs per day fell sharply while revenue held, because monetisation absorbed the shortfall. We are extracting more from a base we are refilling more slowly, with no diagnosis for why intake fell.",
-    "Creator history exports were not made routine. When a creator leaves, their entire earnings history becomes unretrievable from Infloww. One late-August departure was not exported in time and that history is permanently gone.",
-    "Ongoing per-person conversion measurement was not built, in a business where PPV is over 80% of revenue."
+    "Acquisition still not addressed. New subscribers fell 38% week on week, from 582 to 361, while renewals fell 6% and the average unlock stayed flat at $50.33. Revenue held up because monetisation absorbed it. We still cannot diagnose the cause because traffic source and promotional spend are not recorded anywhere.",
+    "No standard for how PPV offers are made. We can now measure that unlock rates range from 16% to 73% across the team, but there is no documented approach for anyone to be measured against or trained toward.",
+    "Creator history exports still not routine. When a creator leaves, their entire earnings history disappears from Infloww. One departure in late August was not exported in time and is permanently gone."
   ],
 
   "focus": {
-    "what": "Diagnose and begin fixing the acquisition decline.",
-    "why": "New subs per day are down sharply while revenue is up. That is a good problem for one month and a serious one for three. We currently cannot diagnose it — traffic source and promotional spend are not tracked anywhere, so we cannot distinguish a promo ending, an algorithm change, reduced posting cadence, or seasonality.",
-    "result": "Restoring the earlier intake rate would mean roughly 35 additional new subscribers per day, on the order of $2,000 per day of recoverable run rate. Instrumenting traffic sources is the prerequisite — without it, any fix is guesswork."
+    "what": "Turn the new chatter data into a standard, starting with the accounts where the money actually moves.",
+    "why": "Until this week we suspected chatter consistency was our largest controllable variable but could not prove it. We can now: unlock rates run from 16% to 73%, and a single chatter's change on a single creator accounted for roughly twice the entire agency's week-on-week decline. Unlike acquisition, this is measurable today and needs no new instrumentation.",
+    "result": "The team sent 822 PPVs and unlocked 464 in the current week, a 56% blended rate. Moving the bottom half of the team toward the top half's conversion is worth more than any pricing change, and we can now measure whether it is working week by week."
   },
 
-  "blocker": "We have a revenue dashboard, not a business dashboard. We can see net revenue, subscribers, unlock prices and per-creator splits to the penny. We have no promotional spend, no traffic source, no cost per acquisition, no chatter payroll and no agency split in the same view. We can answer 'did we move volume' but not 'did we make money' or 'where should the next dollar go'.",
+  "blocker": "We still have a revenue dashboard, not a business dashboard. The chatting side is now instrumented, but we have no promotional spend, no traffic source, no cost per acquisition, no chatter payroll and no agency split in the same view. We can answer 'did we move volume' and now 'who moved it', but still not 'did we make money' or 'where should the next dollar go'.",
 
-  "magic_wand": "Instrument acquisition end to end — know where every new subscriber came from and what it cost. The largest movement in our month is a sharp fall in new subscribers, and it is undiagnosable with the data we hold.",
+  "magic_wand": "Instrument acquisition end to end — know where every new subscriber came from and what it cost. New subscribers fell 38% this week and it remains the single largest movement we cannot explain.",
 
   "stuck": [
-    "Chatter quality spread. A three-day sample showed unlock rates ranging from roughly 6% to nearly 60% across the team. In a business where PPV is over 80% of revenue that spread should be worth a great deal, but three days is not enough to size it or manage anyone on it.",
-    "Top creator softening. She is over half of revenue and down week on week. We cannot tell from the data whether a small number of high-value fans went quiet or whether outbound volume dropped. The two have very different fixes.",
-    "Staff and creator churn. Several creators left within a short window, and on the chatting side the median tenure of leavers is around two weeks. We suspect a systemic onboarding and ramp problem rather than individual fit, but we have no exit data to confirm it."
+    "Acquisition cause. New subs fell 38% in one week with no matching drop in conversion or pricing. We cannot tell whether it is a promo ending, an algorithm change, posting cadence, seasonality, or the roster changes from creators leaving. Nothing in our data distinguishes them.",
+    "Whether the chatter spread is skill, assignment, or fan mix. We can now measure that unlock rates vary 4.5x across the team, but not why. A chatter working a creator with a strong whale base will look better than one working a colder audience, and we cannot yet separate the operator from the account.",
+    "Concentration risk on our top creator. She is 45% of net revenue and accounted for more than the entire agency decline this week. We do not have a plan that reduces this dependency rather than just monitoring it."
   ],
 
   "video_ideas": [
-    "Instrumenting acquisition when you only have platform data. How do agencies attribute new subscribers to a source without ad-platform integration? This is our number one blocker and we suspect it is common.",
-    "Chatter ramp and retention. What does a working onboarding system look like, and what should a new chatter's first 30 days actually contain? Our median leaver lasts about two weeks."
+    "Instrumenting acquisition when you only have platform data. How do agencies attribute new subscribers to a source without ad-platform integration? This remains our number one blocker.",
+    "Turning chatter statistics into a management system. We now have per-chatter conversion data. What are the two or three metrics worth managing on, what are healthy benchmarks, and how do you coach against them without gaming the numbers?"
   ],
 
   "questions": [
     { "tag": "ANALYTICS", "q": "What is the standard approach to subscriber-source attribution on OnlyFans when the platform does not expose referrer data? We are flying blind on acquisition." },
-    { "tag": "OPERATIONS", "q": "Is a two-week median chatter tenure normal for the industry, or is that an outlier? What is a healthy benchmark to aim at?" },
+    { "tag": "CHATTING", "q": "We can now see unlock rates ranging from 16% to 73% across our team. What is a realistic benchmark, and how much of that spread should we expect to be the creator's audience rather than the chatter's skill?" },
     { "tag": "SALES", "q": "We have documented a stepped-pricing sequence that produced over $2,200 from a single fan in under 90 minutes, and we can reproduce the pattern in the transaction data. Is this a known play, and are there refinements or guardrails we are missing?" }
   ]
 }
