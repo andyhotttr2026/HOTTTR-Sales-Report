@@ -30,6 +30,7 @@ jobs:
           python-version: '3.11'
 
       - name: Build report (pull Infloww, generate docs/ofmos.html)
+        id: build
         env:
           INFLOWW_API_KEY: ${{ secrets.INFLOWW_API_KEY }}
           INFLOWW_OID:     ${{ secrets.INFLOWW_OID }}
@@ -39,7 +40,10 @@ jobs:
       # A4 PDF for sending to the consultant. Best-effort — Chrome availability
       # on the runner image is not a guarantee, and a PDF failure must not stop
       # the HTML from publishing or the Slack post below.
+      # Gated on the build actually producing a report: without this, a no-op run
+      # re-renders the previous report's HTML and commits a misleadingly fresh PDF.
       - name: Render PDF
+        if: steps.build.outputs.ran == 'true'
         continue-on-error: true
         run: |
           if [ ! -f docs/ofmos.html ]; then echo "no report this run — skipping PDF"; exit 0; fi
@@ -50,6 +54,7 @@ jobs:
           ls -la docs/ofmos.pdf
 
       - name: Publish to docs/
+        if: steps.build.outputs.ran == 'true'
         continue-on-error: true
         run: |
           git config user.name  "github-actions[bot]"
@@ -62,6 +67,7 @@ jobs:
           fi
 
       - name: Send to Slack
+        if: steps.build.outputs.ran == 'true'
         env:
           INFLOWW_API_KEY:   ${{ secrets.INFLOWW_API_KEY }}
           INFLOWW_OID:       ${{ secrets.INFLOWW_OID }}

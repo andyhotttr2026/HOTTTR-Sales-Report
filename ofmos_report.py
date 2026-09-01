@@ -39,11 +39,13 @@ _u = datetime.now(timezone.utc)
 UK_TZ, TZ_LABEL = london_tz_for(_u.year, _u.month, _u.day)
 NOW = _u.astimezone(UK_TZ)
 
-# The workflow fires twice (05:0x and 06:0x UTC) so one of them is always 06:0x
-# local whether we are in BST or GMT. Skip the one that isn't.
-if not FORCE and NOW.hour != 6:
-    print(f"Skipping: local time is {NOW:%H:%M} {TZ_LABEL}, not the 06:00 slot.")
-    sys.exit(0)
+def emit_ran(ran):
+    """Tell the workflow whether a report was actually produced, so the PDF,
+    commit and Slack steps can be skipped on a no-op run."""
+    p = os.environ.get("GITHUB_OUTPUT")
+    if p:
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(f"ran={'true' if ran else 'false'}\n")
 
 def ms(d, end=False):
     tz, _ = london_tz_for(d.year, d.month, d.day)
@@ -62,6 +64,17 @@ IS_MONDAY = TODAY.weekday() == 0
 KIND    = "Weekly Check-in" if IS_MONDAY else "Mid-week Pulse"
 WINDOW  = "Monday – Sunday" if IS_MONDAY else "rolling 7 days"
 MONTH_START = TODAY.replace(day=1)
+
+# De-duplicate by DAY, not by clock hour. GitHub's scheduler routinely fires
+# these crons hours late, and the report's content depends on the date rather
+# than the time, so a delayed run is still correct. Two crons are scheduled so
+# one lands near 06:00 in both BST and GMT; whichever arrives first does the
+# work, and the archive file it writes makes the second a no-op.
+ARCHIVE = f"docs/archive/ofmos-{A_END.isoformat()}.html"
+if MODE == "build" and not FORCE and os.path.exists(ARCHIVE):
+    print(f"Skipping: {ARCHIVE} already exists — today's report is done.")
+    emit_ran(False)
+    sys.exit(0)
 
 def fmt(d): return f"{d.strftime('%-d' if os.name != 'nt' else '%#d')} {d:%b}"
 
@@ -486,8 +499,9 @@ P4 = f"""<div class="page">{bar(5)}
 html = f"<title>HOTTTR — OFMOS {KIND} · {A_END:%d %b %Y}</title>\n<style>{CSS}</style>\n{P1}{P2}{P3}{P4}"
 
 os.makedirs("docs/archive", exist_ok=True)
-for p in ("docs/ofmos.html", f"docs/archive/ofmos-{A_END.isoformat()}.html"):
+for p in ("docs/ofmos.html", ARCHIVE):
     with open(p, "w", encoding="utf-8") as f: f.write(html)
+emit_ran(True)
 print(f"Wrote docs/ofmos.html  ({KIND}, {A_START} to {A_END})")
 print(f"  net {M(A['net'])} vs {M(B['net'])}  ({g_net:+.1f}%)")
 print(f"  new {A['new']} vs {B['new']}  ({g_sub:+.1f}%)")
