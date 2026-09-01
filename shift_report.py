@@ -326,7 +326,7 @@ def write_widget(ctx):
     <tbody>{htrows}</tbody></table></div>
   <div class="panel"><h2>Creator net revenue</h2>{bars}</div>
   <div class="panel"><h2>Creator breakdown</h2>
-    <table><thead><tr><th>Creator</th><th>Subs</th><th>New/Ren</th><th class="num">PPV</th><th class="num">Tips</th><th class="num">Net</th></tr></thead>
+    <table><thead><tr><th>Creator</th><th>Total Subs</th><th>New/Ren</th><th class="num">PPV</th><th class="num">Tips</th><th class="num">Net</th></tr></thead>
     <tbody>{trows}</tbody></table></div>
 </div>'''
     os.makedirs("docs/archive", exist_ok=True)
