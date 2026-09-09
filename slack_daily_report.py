@@ -3,7 +3,9 @@ from datetime import datetime, timezone, timedelta
 
 API_KEY      = os.environ.get('INFLOWW_API_KEY')
 OID          = os.environ.get('INFLOWW_OID')
-SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_URL')
+# Daily report posts to its own channel. SLACK_WEBHOOK_DAILY is the one to set;
+# SLACK_WEBHOOK_URL is the shared fallback the shift report still uses.
+SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_DAILY') or os.environ.get('SLACK_WEBHOOK_URL')
 BASE         = "https://openapi.infloww.com"
 UA           = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS      = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
@@ -136,7 +138,7 @@ payload = {"blocks": blocks}
 # ── Send ──────────────────────────────────────────────────────────────────────
 
 if not SLACK_WEBHOOK:
-    print("ERROR: SLACK_WEBHOOK_URL not set")
+    print("ERROR: neither SLACK_WEBHOOK_DAILY nor SLACK_WEBHOOK_URL is set")
     exit(1)
 
 req = urllib.request.Request(

@@ -459,7 +459,9 @@ focus_html = (f'<p><b>{esc(focus.get("what",""))}</b></p>'
 P3 = f"""<div class="page">{bar(4)}
 <h1>Progress</h1>
 <div class="sub">Written sections — entered by the team, not generated.
-They describe the calendar week beginning <b>{fmt(NOTES_WEEK)}</b>.</div>
+They describe {"the calendar week beginning <b>" + fmt(NOTES_WEEK) + "</b>"
+              if IS_MONDAY else
+              "the same window as the figures above, <b>" + fmt(A_START) + " – " + fmt(A_END) + "</b>"}.</div>
 <h2>What actually got done — and the results</h2>
 {bullets("done", "the actions the team took last week and the result of each. The numbers on pages 1–2 are outcomes; this section is the inputs that produced them.")}
 <h2>What did not get done — and the effect</h2>

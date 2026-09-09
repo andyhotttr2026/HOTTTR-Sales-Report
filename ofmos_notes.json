@@ -2,29 +2,30 @@
   "_readme": "Written sections of the OFMOS report. The numbers auto-generate; these do not. Update week_of to the Monday of the week you are reporting (YYYY-MM-DD) or the report will show a NEEDS INPUT banner. Nothing here is auto-written.",
   "week_of": "2026-08-24",
   "done": [
-    "Built per-chatter performance measurement for the first time. We can now see PPVs sent, unlock rate, fans chatted, message volume and response time for every chatter, per creator, per day. This was our stated blocker last week and it is now closed.",
-    "Used it immediately to locate the largest single movement in the business: one chatter's output on our top creator fell $6,115 week on week, driven by fewer and lower-priced offers rather than absence. Message volume and fans contacted both rose over the same period.",
-    "Second-tier creators grew again. Fox Heart +90% and Ella Robinson +35% week on week, together adding $3,543.",
-    "Automated the reporting itself. Daily, per-shift and this weekly check-in now generate and publish without manual work."
+    "Diagnosed this week's decline precisely rather than by assertion. It is not acquisition. New subscribers rose 5.3%, paying fans fell 1.4% and subscription revenue was flat. The entire $15,788 fall is PPV, and it splits into 19% fewer unlocks and a 27.4% lower average unlock price.",
+    "Confirmed it from an independent second source. Per-chatter reporting shows PPVs sent down 12%, unlock rate down from 55.0% to 47.7%, and average sale down 26.5%. Transactions and chatter reporting agree on the price move to within a percentage point.",
+    "Measured what winning a lapsed fan back is actually worth, from real transactions rather than lifetime value: $69 median and $198 mean net over the 30 days after they return. That sizes a win-back programme at $1,000 to $2,000 a month, not the $130,000 a lifetime-value view implies.",
+    "Obtained fan-level retention data for the first time. Return odds fall from 30.2% to 10.4% between day 30 and day 45 of silence, measured across 36,056 observed silences.",
+    "Cohort quality is now measurable. Fans acquired in May are worth $37.92 by month three; fans acquired in June are worth $56.49. May was our largest intake and our worst, which is the first hard evidence we have on where acquisition spend should not go."
   ],
   "not_done": [
-    "Acquisition still not addressed. New subscribers fell 38% week on week, from 582 to 361, while renewals fell 6% and the average unlock stayed flat at $50.33. Revenue held up because monetisation absorbed it. We still cannot diagnose the cause because traffic source and promotional spend are not recorded anywhere.",
-    "No standard for how PPV offers are made. We can now measure that unlock rates range from 16% to 73% across the team, but there is no documented approach for anyone to be measured against or trained toward.",
-    "Creator history exports still not routine. When a creator leaves, their entire earnings history disappears from Infloww. One departure in late August was not exported in time and is permanently gone.",
-    "Chatter onboarding was not addressed. Median tenure of leavers is around two weeks and 45 of 46 departures lasted under 90 days. The consultant has confirmed this is an onboarding failure rather than a hiring or role problem, and pointed to a gated Learn-Test-Apply-Advance structure as the fix. Nothing has been built yet."
+    "Chatter onboarding still not built. This has been the named fix for three consecutive weeks and nothing has been designed. Median tenure of leavers remains around two weeks.",
+    "No PPV pricing standard. The average unlock fell 27% in seven days and there is no floor, no owner and no documented approach to measure that against.",
+    "Costs still not recorded anywhere, so we still have no margin and no cost per acquisition.",
+    "Creator history exports still not routine. When a creator departs their earnings history is deleted from Infloww permanently, and we have already lost one month's worth."
   ],
   "focus": {
-    "what": "Turn the new chatter data into a standard, starting with the accounts where the money actually moves.",
-    "why": "Until this week we suspected chatter consistency was our largest controllable variable but could not prove it. We can now: unlock rates run from 16% to 73%, and a single chatter's change on a single creator accounted for roughly twice the entire agency's week-on-week decline. Unlike acquisition, this is measurable today and needs no new instrumentation.",
-    "result": "The team sent 822 PPVs and unlocked 464 in the current week, a 56% blended rate. Moving the bottom half of the team toward the top half's conversion is worth more than any pricing change, and we can now measure whether it is working week by week."
+    "what": "Hold the unlock price. It fell from $55.68 to $40.41 in a single week.",
+    "why": "Price per unlock is now the largest single driver of revenue and the fastest moving. Volume fell 19% this week; price fell 27%. Unlike acquisition it needs no new instrumentation, and unlike the roster it can be measured daily, by chatter, starting immediately.",
+    "result": "Two chatters improved conversion this week, to 75.0% and 55.7%, while the previous week's top three each fell more than 60%. If that spread is coachable it is the largest controllable number in the business."
   },
-  "blocker": "We still have a revenue dashboard, not a business dashboard. The chatting side is now instrumented, but we have no promotional spend, no traffic source, no cost per acquisition, no chatter payroll and no agency split in the same view. We can answer 'did we move volume' and now 'who moved it', but still not 'did we make money' or 'where should the next dollar go'.",
-  "magic_wand": "Instrument acquisition end to end — know where every new subscriber came from and what it cost. New subscribers fell 38% this week and it remains the single largest movement we cannot explain.",
+  "blocker": "We still have a revenue view rather than a business view, and this week the gap became sharper rather than smaller. We evaluated an agency dashboard that already has fields for chatter payroll, creator splits and ad spend, and every one of them is zero. What was an instrumentation problem is now a data-entry problem, which means the constraint is ours rather than the tooling's.",
+  "magic_wand": "Know whether the unlock-rate spread is skill or account. It runs from 18.8% to 75.0% across the team. If it is skill, it is the biggest coachable number we have. If it is the account, we are ranking people on their allocation and every conclusion we draw from it is wrong.",
   "stuck": [
-    "Acquisition cause. New subs fell 38% in one week with no matching drop in conversion or pricing. We cannot tell whether it is a promo ending, an algorithm change, posting cadence, seasonality, or the roster changes from creators leaving. Nothing in our data distinguishes them.",
-    "Chatter retention. We know the median leaver lasts about two weeks and we now know that is not normal, but we have no exit data, so we cannot tell which part of weeks one and two loses people. Until we can, any onboarding rebuild is designed blind.",
-    "Whether the chatter spread is skill, assignment, or fan mix. We can now measure that unlock rates vary 4.5x across the team, but not why. A chatter working a creator with a strong whale base will look better than one working a colder audience, and we cannot yet separate the operator from the account.",
-    "Concentration risk on our top creator. She is 45% of net revenue and accounted for more than the entire agency decline this week. We do not have a plan that reduces this dependency rather than just monitoring it."
+    "Whether the price collapse is deliberate discounting to close sales or unmanaged drift. We keep no pricing log, so we cannot distinguish a decision from an accident.",
+    "Two consecutive weeks of opposite failures. Last week acquisition fell 38% while monetisation held; this week monetisation fell 41% while acquisition held. We cannot tell whether the team is trading one against the other or whether it is coincidence.",
+    "Chatter retention. We know the median leaver lasts about two weeks and that this is not normal, but we still have no exit data, so any onboarding rebuild is designed blind.",
+    "Concentration on our top creator. She is 43.3% of net revenue and accounted for 68.3% of this week's entire decline. We still monitor this rather than address it."
   ],
   "video_ideas": [
     "Chatter ramp and retention in practice. We have the Learn-Test-Apply-Advance principle but not the detail: what belongs in each gate, who signs off, and what a new chatter's first 30 days actually contains day by day.",
@@ -32,16 +33,16 @@
   ],
   "questions": [
     {
-      "tag": "ANALYTICS",
-      "q": "What is the standard approach to subscriber-source attribution on OnlyFans when the platform does not expose referrer data? We are still flying blind on acquisition."
+      "tag": "SALES",
+      "q": "Our average unlock fell 27% in a single week. What does a workable price floor look like when chatters are commission-motivated to close, and how do you enforce one without killing the ladder that produces our best days?"
     },
     {
       "tag": "OPERATIONS",
-      "q": "On the gated Learn-Test-Apply-Advance loop: what is the minimum viable version we could run next week with 11 chatters and one team lead, rather than a full build? And what should we be measuring to know it is working before tenure data catches up months later?"
+      "q": "Unlock rates across our team run from 18.8% to 75.0%. How do you separate operator skill from account quality well enough to coach it, short of a controlled rotation we cannot afford to run?"
     },
     {
-      "tag": "SALES",
-      "q": "On the ladder guardrails: what is a sensible per-session cap as a share of a fan's typical monthly spend? And is there a concentration threshold you would treat as the point to actively refuse revenue - our top five fans are already about a quarter of agency revenue."
+      "tag": "RETENTION",
+      "q": "We can now see the 30-day cliff in our own data. What is the standard cadence for touching a high-value fan before they reach it, and who should own that - the chatter on the account, or a dedicated win-back queue worked by someone else?"
     }
   ]
 }

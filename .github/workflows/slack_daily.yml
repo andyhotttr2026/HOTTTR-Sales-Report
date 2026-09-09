@@ -47,5 +47,8 @@ jobs:
 
       - name: Send to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # Posts to the daily-report channel. Falls back to the shared webhook
+          # if SLACK_WEBHOOK_DAILY has not been added to repo secrets yet.
+          SLACK_WEBHOOK_DAILY: ${{ secrets.SLACK_WEBHOOK_DAILY }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python slack_daily_report.py send
