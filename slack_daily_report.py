@@ -1,4 +1,4 @@
-import urllib.request, urllib.error, json, os
+import urllib.request, urllib.error, json, os, sys
 from datetime import datetime, timezone, timedelta
 
 API_KEY      = os.environ.get('INFLOWW_API_KEY')
@@ -6,6 +6,12 @@ OID          = os.environ.get('INFLOWW_OID')
 # Daily report posts to its own channel. SLACK_WEBHOOK_DAILY is the one to set;
 # SLACK_WEBHOOK_URL is the shared fallback the shift report still uses.
 SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_DAILY') or os.environ.get('SLACK_WEBHOOK_URL')
+
+# build | send | dry.  Defaults to send so a bare run still posts.
+# The script previously ignored argv and posted on EVERY invocation, so the
+# workflow's webhook-less "build" step exited 1 and killed the job before the
+# send step ever ran. That is why no daily report fired after 11 Aug 2026.
+MODE = (sys.argv[1] if len(sys.argv) > 1 else "send").lower()
 BASE         = "https://openapi.infloww.com"
 UA           = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS      = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
@@ -137,9 +143,17 @@ payload = {"blocks": blocks}
 
 # ── Send ──────────────────────────────────────────────────────────────────────
 
+summary = f"{DAY_LABEL} | net=${grand_net/100:,.2f} | {total_subs} subs"
+
+if MODE != "send":
+    # build / dry: compute and report, never post. Keeps the workflow's
+    # webhook-less build step green.
+    print(f"[{MODE}] built, not posting - {summary}")
+    sys.exit(0)
+
 if not SLACK_WEBHOOK:
     print("ERROR: neither SLACK_WEBHOOK_DAILY nor SLACK_WEBHOOK_URL is set")
-    exit(1)
+    sys.exit(1)
 
 req = urllib.request.Request(
     SLACK_WEBHOOK,
@@ -150,7 +164,7 @@ req = urllib.request.Request(
 
 try:
     with urllib.request.urlopen(req, timeout=10) as r:
-        print(f"Sent to Slack: {DAY_LABEL} | net=${grand_net/100:,.2f} | {total_subs} subs")
+        print(f"Sent to Slack: {summary}")
 except urllib.error.HTTPError as e:
     print(f"Slack error {e.code}: {e.read().decode()}")
-    exit(1)
+    sys.exit(1)
