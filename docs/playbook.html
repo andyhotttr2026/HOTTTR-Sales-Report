@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#12141f">
+<meta name="description" content="HOTTTR chat floor playbook - internal reference.">
+<title>Chat Floor Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --bg:#12141f; --panel:#1a1d2b; --card:#1e2130; --card-hi:#242839;
+  --line:#2a2e40; --line-soft:#222634;
+  --text:#e8eaf0; --dim:#8890a6; --dimmer:#5a6178;
+  --pink:#e8629a; --pink-soft:#f2a3c0; --pink-dim:#5c2a41;
+  --cyan:#4db8ff; --cyan-dim:#123a52;
+  --gold:#f5b544; --gold-dim:#453213;
+  --purple:#a98bff; --purple-dim:#312448;
+  --red:#ff5c6c; --red-dim:#4a1e24;
+  --green:#3ddc84;
+  --font-ui:"Archivo","Segoe UI",Helvetica,Arial,sans-serif;
+  --font-body:"Public Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);
+     font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--font-ui);margin:0}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--pink);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 64px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(18,20,31,.94);
+       backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 0 12px}
+.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--font-ui);font-weight:700;letter-spacing:2.4px;font-size:13px;color:var(--pink)}
+.brand i{color:var(--pink-soft);font-style:normal}
+h1{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-top:2px}
+.tag{font-size:12.5px;color:var(--dim);margin-top:2px}
+.ver{font-family:var(--font-mono);font-size:11px;color:var(--dimmer);white-space:nowrap}
+
+.tools{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.search{flex:1;min-width:190px;position:relative}
+.search input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:9px;
+              padding:9px 12px 9px 34px;font-size:14px}
+.search input::placeholder{color:var(--dimmer)}
+.search svg{position:absolute;left:11px;top:11px;width:14px;height:14px;stroke:var(--dimmer);
+            fill:none;stroke-width:2}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;
+      font-size:12.5px;cursor:pointer;color:var(--dim);white-space:nowrap;
+      transition:border-color .12s,color .12s,background .12s}
+.chip:hover{color:var(--text);border-color:var(--dimmer)}
+.chip.on{background:var(--pink-dim);border-color:var(--pink);color:var(--pink-soft)}
+.count{font-family:var(--font-mono);font-size:11.5px;color:var(--dimmer);margin-left:auto;
+       white-space:nowrap}
+
+/* section */
+.sec{margin-top:26px}
+.sec>h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:9px;
+        padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:13px}
+.sec>h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--h);flex:none}
+.sec>h2 .n{font-family:var(--font-mono);font-size:11.5px;color:var(--dimmer);margin-left:auto;
+           font-weight:400}
+.sec>h2 .blurb{font-family:var(--font-body);font-size:12.5px;color:var(--dim);font-weight:400}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.play{background:var(--card);border:1px solid var(--line-soft);border-radius:12px;
+      padding:13px 15px;cursor:pointer;transition:border-color .12s,background .12s}
+.play:hover{border-color:var(--dimmer);background:var(--card-hi)}
+.play.open{border-color:var(--h);background:var(--card-hi)}
+.play .top{display:flex;align-items:baseline;gap:9px}
+.play .num{font-family:var(--font-mono);font-size:11px;color:var(--h);flex:none;
+           font-weight:500;min-width:18px}
+.play h3{font-size:14.5px;font-weight:600;line-height:1.35;flex:1}
+.play .car{flex:none;color:var(--dimmer);font-size:11px;transition:transform .15s}
+.play.open .car{transform:rotate(90deg)}
+.play .sum{font-size:13.4px;color:var(--dim);margin-top:5px;padding-left:27px}
+.play .body{display:none;padding-left:27px;margin-top:9px}
+.play.open .body{display:block}
+.play .body p{margin:0 0 8px;font-size:13.6px}
+.play .body p:last-child{margin-bottom:0}
+.play .body b{color:var(--text);font-weight:600}
+.metric{display:flex;gap:8px;align-items:flex-start;background:var(--bg);border-radius:8px;
+        padding:8px 11px;margin:8px 0;font-size:12.6px;color:var(--dim)}
+.metric .k{font-family:var(--font-mono);font-size:10px;letter-spacing:.9px;color:var(--h);
+           text-transform:uppercase;flex:none;padding-top:2px;font-weight:500}
+.say{background:var(--bg);border-left:2px solid var(--h);border-radius:0 8px 8px 0;
+     padding:9px 12px;margin:8px 0;font-size:13.4px;color:var(--text);position:relative}
+.say .lb{font-family:var(--font-mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;
+         color:var(--dimmer);display:block;margin-bottom:3px}
+.say .cp{position:absolute;top:7px;right:8px;background:transparent;border:1px solid var(--line);
+         border-radius:6px;padding:2px 8px;font-size:10.5px;color:var(--dim);cursor:pointer}
+.say .cp:hover{border-color:var(--pink);color:var(--pink-soft)}
+.say .cp.ok{border-color:var(--green);color:var(--green)}
+.warn{background:var(--red-dim);border-radius:8px;padding:9px 12px;margin:8px 0;font-size:12.8px}
+.warn b{color:#ffb3ba}
+
+.empty{text-align:center;padding:44px 20px;color:var(--dimmer);font-size:14px}
+.foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);
+      font-size:12px;color:var(--dimmer);display:flex;justify-content:space-between;
+      gap:12px;flex-wrap:wrap}
+@media (max-width:560px){
+  .grid{grid-template-columns:1fr}
+  h1{font-size:19px}
+  .play .sum,.play .body{padding-left:0}
+}
+</style>
+</head>
+<body>
+
+
+<header><div class="wrap">
+  <div class="hd">
+    <div>
+      <div class="brand">HOTTTR<i>.</i></div>
+      <h1>Chat Floor Playbook</h1>
+      <div class="tag">What to run when the floor is quiet, and how to build want instead of cutting price.</div>
+    </div>
+    <div class="ver" id="ver">v1.0</div>
+  </div>
+  <div class="tools">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.5-4.5"></path></svg>
+      <input type="search" id="q" placeholder="Search the playbook — ladder, whale, rebill, tease…"
+             autocomplete="off" aria-label="Search plays">
+    </div>
+    <div class="chips" id="chips"></div>
+    <span class="count" id="count"></span>
+  </div>
+</div></header>
+
+<div class="wrap"><div id="out"></div>
+  <div class="foot">
+    <span>HOTTTR chat team &middot; internal &middot; ask the Sales Director to add a play</span>
+    <span id="stamp"></span>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+ {id:"downtime", name:"Downtime plays", hue:"var(--cyan)",
+  blurb:"No messages coming in? None of these need a fan to speak first."},
+ {id:"curiosity", name:"Building curiosity", hue:"var(--pink)",
+  blurb:"Raise the want instead of dropping the price."},
+ {id:"ladder", name:"The price ladder", hue:"var(--gold)",
+  blurb:"Reverse-engineered from our two biggest days. This is the highest-value thing we know."},
+ {id:"guard", name:"Guardrails", hue:"var(--red)",
+  blurb:"The things that cost us a fan, a creator, or a job."},
+ {id:"targets", name:"Your numbers", hue:"var(--purple)",
+  blurb:"What you are measured on, and where the team currently sits."}
+];
+
+const PLAYS = [
+/* ── DOWNTIME ─────────────────────────────────────────────── */
+{s:"downtime", t:"Work the 30-day cliff list first",
+ sum:"Fans silent 21–45 days. The highest value per minute you will spend all shift.",
+ body:`<p>Sort your silent fans by days quiet and work the <b>25 to 30 day</b> end first. Not the
+ oldest — the ones about to fall off.</p>
+ <p>Past day 45 you are working a much colder list for a fraction of the return, so the whole
+ game is getting to them before the window shuts.</p>`,
+ metric:["Why 30 days","Return odds hold around 30% up to day 30, then fall to 10.4% by day 45. Across the agency, 105 high-value fans sit in that window right now carrying $40,802 a month of stopped spend. One recovered is worth $69 median, $198 average over the next 30 days."]},
+
+{s:"downtime", t:"Clear the missed-one-rebill list",
+ sum:"A fan who missed one rebill is still reachable. After two, they rarely come back.",
+ body:`<p>Thirty seconds each and the list is finite. Clear it rather than graze it.</p>
+ <p>Do not lead with the rebill. Lead with a reason to come back and let the subscription follow.</p>`,
+ metric:["Live figure","176 fans have missed exactly one rebill. That is the recoverable window — the 493 who lapsed twice are a different, much colder job."]},
+
+{s:"downtime", t:"Chase the new subs nobody messaged",
+ sum:"A subscriber nobody speaks to cannot convert. Check the last 24–48 hours.",
+ body:`<p>Pull the recent new subs on your accounts and find the ones with <b>no outbound
+ message at all</b>. Not a mass message — a first line written to them.</p>
+ <p>This is the cheapest revenue in the building and it is being left on the floor.</p>`,
+ metric:["Why it matters","Only 19% of new subscribers bought anything within seven days last week — our worst rate in five weeks, on our best intake. 443 arrived and buyers stayed flat."]},
+
+{s:"downtime", t:"Widen the net, hold the volume",
+ sum:"More fans reached at the same message count beats more messages to the same fans.",
+ body:`<p>Do not answer a quiet hour by sending more to the people you always send to. Spread the
+ same effort across more fans.</p>
+ <p>We have proof on both sides of this from the same week.</p>`,
+ metric:["Both sides","One chatter went from 34 to 77 fans a day at the same message volume — his unlock rate rose from 39% to 62.5%. Another went from 8 to 28 sends a day to the same kind of list and converted at 8.8% against 50.8%. Reach wins. Raw volume does not."]},
+
+{s:"downtime", t:"Whale silence sweep",
+ sum:"Check every high-value fan you hold for last-purchase date.",
+ body:`<p>One whale re-engaged is worth more than fifty cold messages. In dead air, go down your
+ top spenders and find anyone who has gone quiet without you noticing.</p>
+ <p>Read the notes before you send. These are the fans where a wrong message costs most.</p>`,
+ metric:["The concentration","170 fans are a third of all agency revenue. The top 100 are 26.5%."]},
+
+{s:"downtime", t:"Second ladder on today's buyers",
+ sum:"A fan who said yes an hour ago is the warmest person on your list.",
+ body:`<p>One close is not the end of the conversation. Reset, open low, and run it again later in
+ the session.</p>
+ <p>We have a fan on record who ran <b>three separate ladders in one day</b>. Nobody asked him
+ twice by accident — someone came back.</p>`},
+
+{s:"downtime", t:"Down-sell the tail",
+ sum:"After a ladder stalls, drop hard rather than leaving it unopened.",
+ body:`<p>Come down to roughly <b>$37</b>, then as low as <b>$2</b>. Both still convert.</p>
+ <p>An unopened $160 PPV earns nothing. A taken $2 restarts buying behaviour and gives you
+ something to build on next session.</p>`},
+
+{s:"downtime", t:"Work the tag lists",
+ sum:"Our own fan names carry the map. Filter by tag instead of scrolling.",
+ body:`<p><b>AFTERCARE · ONGOING VIP · INNER CIRCLE · MEGA BALLER · PENDING IC · PENDING IG</b> —
+ these are not decoration. Top spenders on both record days were tagged.</p>
+ <p>Pick a tag, work the list, log what happened.</p>`},
+
+{s:"downtime", t:"Ladder the mid tier",
+ sum:"The $50+ fans are the feeder for the $250+ tier. Pick ten and work them properly.",
+ body:`<p>Ten genuine ladders beat one hopeful mass send. The mid tier is where the next high-value
+ fans come from, and almost nobody works it deliberately.</p>`,
+ metric:["The pool","3,241 fans sit in the $50+ tier, worth $345,672 between them. 194 were active this week."]},
+
+{s:"downtime", t:"Load the peak before it lands",
+ sum:"Arrive at the busy hours with a queue, not a blank screen.",
+ body:`<p>Use dead air to pre-build: content picked, ladders drafted, notes read, next action decided
+ per fan.</p>
+ <p>Shift 3 has produced the biggest share of revenue on every record day we have. Walking into it
+ unprepared is the most expensive hour you can waste.</p>`,
+ metric:["Shift 3","17:00–01:00 UK / 00:00–08:00 Manila."]},
+
+/* ── CURIOSITY ────────────────────────────────────────────── */
+{s:"curiosity", t:"Leave the loop open",
+ sum:"End on something unfinished, not on an offer.",
+ body:`<p>An unresolved sentence gets a reply. A price gets silence.</p>`,
+ say:"I filmed something earlier and I'm still not sure I should send it 🙈"},
+
+{s:"curiosity", t:"Be specific, never generic",
+ sum:"“New content available” is invisible. A detail he can picture is not.",
+ body:`<p>Specificity is what makes a message feel written to him rather than broadcast at him.
+ Name the thing — the day, the colour, the place.</p>`,
+ say:"remember the blue set from Thursday? I kept one back"},
+
+{s:"curiosity", t:"Time-box the reveal",
+ sum:"Give it a clock. It creates a return visit and a reason to stay in the thread.",
+ body:`<p>Only works if you actually deliver at the time you said. A missed reveal kills the next
+ three you try.</p>`,
+ say:"I'll send it after 11 — don't let me forget"},
+
+{s:"curiosity", t:"Ask before you offer",
+ sum:"A question earns a reply. A number does not.",
+ body:`<p>Two exchanges before an offer converts far better than a cold price — and it tells you
+ which direction to ladder before you commit to one.</p>`},
+
+{s:"curiosity", t:"Show the frame, not the thing",
+ sum:"Preview the edge of it and let him fill in the gap.",
+ body:`<p>The setup, the location, the outfit still on. What he imagines is always better than what
+ you can describe, and it costs you nothing to send.</p>`},
+
+{s:"curiosity", t:"Call back something he told you",
+ sum:"This is what the notes are for. Nothing builds warmth faster than proof you remembered.",
+ body:`<p>Fans who feel known spend more and stay longer. Every note you write is a hook for a
+ future session.</p>`,
+ say:"you said you were off Thursday — did you actually get the day or did they call you in again"},
+
+{s:"curiosity", t:"Offer a choice, not a decision",
+ sum:"Either/or replaces yes/no. Now he's choosing how to buy, not whether.",
+ body:`<p>Two options, both of which are a sale. Three is too many.</p>`,
+ say:"which one — the couch or the mirror?"},
+
+{s:"curiosity", t:"Scarcity, but only when it's true",
+ sum:"One-of-one, tonight only, not going in the vault. All fine if real.",
+ body:`<p>Real scarcity is an asset. Invented scarcity spends it — and a fan who catches you stops
+ believing every future message.</p>`,
+ warn:"They talk to each other. One fabricated “last chance” can burn a whole account's trust, not just one thread."},
+
+{s:"curiosity", t:"Drip two or three hints before the ask",
+ sum:"Escalate the tease before you escalate the price.",
+ body:`<p>This is the ladder applied to <b>attention</b>. It is also why re-selling at the ceiling
+ works — by the time you get there he is already leaning in.</p>`},
+
+{s:"curiosity", t:"Send one thing with no ask attached",
+ sum:"One message a session that sells nothing. It buys the next ask a warm thread.",
+ body:`<p>A reaction, a callback, a good morning. It builds credit so the next offer lands on a
+ conversation rather than a transaction.</p>
+ <p>Our biggest spenders carry AFTERCARE tags for a reason.</p>`},
+
+/* ── LADDER ───────────────────────────────────────────────── */
+{s:"ladder", t:"Open low",
+ sum:"$12–48. The first yes establishes buying behaviour.",
+ body:`<p>You are not trying to make money on the first send. You are trying to turn a reader into
+ a buyer. Everything after that is easier.</p>`},
+
+{s:"ladder", t:"Escalate 1.2 to 1.35× a step",
+ sum:"Small steps. Each yes should feel like the last one.",
+ body:`<p>Worked example from a real session — Emma Storm VIP, <b>$2,261 in 83 minutes</b>:</p>`,
+ metric:["The sequence","$25.59 → 34.39 → 44.79 → 57.59 → 73.59 → 87.99 → 103.99 → 127.99 → 159.99"]},
+
+{s:"ladder", t:"Keep tight cadence",
+ sum:"One to three minutes apart once he is buying. Don't let the session cool.",
+ body:`<p>The gap between messages is part of the mechanic. A five-minute pause mid-ladder gives him
+ room to stop.</p>`},
+
+{s:"ladder", t:"Keep selling AT the ceiling",
+ sum:"$160 is not the end of the ladder. It's where the money is.",
+ body:`<p>In the session above, the ladder reached $159.99 and then sold it <b>ten more times in
+ nineteen minutes</b>. That was $1,600 from the ceiling alone — more than the entire climb.</p>
+ <p>Most chatters stop at the top step. Don't.</p>`},
+
+{s:"ladder", t:"Or flat-repeat",
+ sum:"Some fans don't need a ladder at all. Find the number and repeat it.",
+ body:`<p>One fan paid <b>$40 thirty-two times in 67 minutes</b> — $1,361, no escalation. If a price
+ is landing, stop being clever and keep sending it.</p>`},
+
+{s:"ladder", t:"Scale beats price",
+ sum:"More buyers at a lower average beats fewer buyers at a higher one.",
+ body:`<p>This is the guardrail on everything above. The instruction is <b>run the ladder on more
+ fans</b>, not at higher prices.</p>`,
+ metric:["The proof","4 July made 93% more than 11 August on a LOWER average unlock — $48.94 against $56.10 — because it had 107 buyers against 43."]},
+
+/* ── GUARDRAILS ───────────────────────────────────────────── */
+{s:"guard", t:"Read the fan's name before you send",
+ sum:"The tags cut both ways. Some of them are instructions not to sell.",
+ body:`<p><b>DON'T PUSH · CAN'T SPEND NOW · BROKE FOR NOW · NO FREE SEXTING · DON'T SEND HIM BG ·
+ AFTERCARE ONLY</b></p>
+ <p>Pushing one of these costs a fan permanently, and they are usually on the fans worth the most.</p>`,
+ warn:"One fan on our list is tagged “hates sexting and PPVs, don't send” — and is a top-25 spender. The note is the whole reason he still spends."},
+
+{s:"guard", t:"Never take a tip for an unapproved custom",
+ sum:"The creator approves first. Every time. No exceptions.",
+ body:`<p>Not for a regular, not for a whale, not because it looks obviously fine. Submit it, wait
+ for the answer.</p>
+ <p>If a tip has already been taken on something unapproved, say so immediately. Do not try to fix
+ it quietly.</p>`,
+ warn:"This is the one that ends jobs, not the one that costs a sale."},
+
+{s:"guard", t:"Never answer for the creator",
+ sum:"If only she can answer it, she answers it. You relay.",
+ body:`<p>Guessing on her behalf is how we end up promising content that does not exist or crossing
+ a limit she has set.</p>`},
+
+{s:"guard", t:"Don't discount to close",
+ sum:"Dropping the price is the easy way to make today's number and it is costing us the month.",
+ body:`<p>Our average unlock has fallen three weeks running. That is what discounting looks like at
+ scale. Build want instead — everything in the curiosity section exists for this.</p>`,
+ metric:["The trend","$50.33 → $42.59 → $32.62 across three weeks. Down 35% in a fortnight."]},
+
+{s:"guard", t:"Log it or it didn't happen",
+ sum:"Customs chased, PPVs received, page needs, fan notes.",
+ body:`<p>If you can't say when you last chased something, you haven't been tracking it. The notes
+ are also the single best sales tool you have — see “call back something he told you”.</p>`},
+
+{s:"guard", t:"Volume without aim converts nothing",
+ sum:"Sending more to a cold list makes the numbers look busy and earns nothing.",
+ body:`<p>A real example from this month: one chatter tripled sends and converted at 8.8% against
+ 50.8% the week before. More sends, less money, and a lot of fans annoyed.</p>`},
+
+/* ── TARGETS ──────────────────────────────────────────────── */
+{s:"targets", t:"PPV send quota",
+ sum:"Teams 1 & 2: 100 a week. Teams 3 & 4: 60 a week. Monday to Sunday.",
+ body:`<p>At day <b>n</b> of seven, you should be at <b>target × n ÷ 7</b>. Checked on the Wednesday
+ and Friday calls, so being behind on Wednesday is recoverable and being behind on Sunday is not.</p>`,
+ metric:["Where the teams sit","Teams 1 & 2 hit 522 of 600 last week — their first miss, after 815, 715 and 622. Teams 3 & 4 hit 264 of 300, their best week on record."]},
+
+{s:"targets", t:"Unlock rate",
+ sum:"Under 40% and your sessions get reviewed. The team spread is enormous.",
+ body:`<p>This is the number that separates the top of the team from the bottom, and it is
+ coachable — one chatter moved from 39% to 62.5% in a single week by reaching wider.</p>`,
+ metric:["Current spread","8.8% to 62.5% across the team. Team blended rate 47.5%, down from 56.6%."]},
+
+{s:"targets", t:"Average unlock",
+ sum:"The number the whole agency is currently losing. Hold your price.",
+ body:`<p>A floor is being set per creator tier. Until it lands, the instruction is simple: do not
+ open lower than you did last week, and do not discount to close a stalling ladder — down-sell the
+ tail instead.</p>`,
+ metric:["Agency","$32.62 this week, against $42.59 last week and $50.33 the week before."]},
+
+{s:"targets", t:"Fans contacted",
+ sum:"Reach, not message count. This is the number we want going up.",
+ body:`<p>Contacting more fans with the same message volume is the pattern that works. It is
+ measured per chatter per week.</p>`,
+ metric:["Agency","411 a day, up 23% — the first rise in five weeks after 539 → 455 → 398 → 333."]}
+];
+
+const el = id => document.getElementById(id);
+let filter = "all", query = "";
+
+el("chips").innerHTML =
+  `<button class="chip on" data-f="all">All</button>` +
+  SECTIONS.map(s=>`<button class="chip" data-f="${s.id}">${s.name}</button>`).join("");
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function playHTML(p, i){
+  const hay = (p.t+" "+p.sum+" "+(p.body||"")+" "+(p.say||"")+" "+
+               (p.metric?p.metric.join(" "):"")+" "+(p.warn||"")).toLowerCase();
+  if(query && !hay.includes(query)) return "";
+  const say = p.say ? `<div class="say"><span class="lb">Try</span>${esc(p.say)}
+      <button class="cp" data-say="${esc(p.say)}">Copy</button></div>` : "";
+  const met = p.metric ? `<div class="metric"><span class="k">${p.metric[0]}</span>
+      <span>${p.metric[1]}</span></div>` : "";
+  const wrn = p.warn ? `<div class="warn"><b>Watch out.</b> ${p.warn}</div>` : "";
+  return `<div class="play" data-i="${i}" tabindex="0" role="button" aria-expanded="false">
+    <div class="top"><span class="num">${String(p.n).padStart(2,"0")}</span>
+      <h3>${esc(p.t)}</h3><span class="car">&#9656;</span></div>
+    <div class="sum">${esc(p.sum)}</div>
+    <div class="body">${p.body||""}${met}${say}${wrn}</div></div>`;
+}
+
+function render(){
+  let shown = 0;
+  el("out").innerHTML = SECTIONS.map(s=>{
+    if(filter!=="all" && filter!==s.id) return "";
+    const cards = PLAYS.map((p,i)=>p.s===s.id?playHTML(p,i):"").join("");
+    if(!cards.trim()) return "";
+    const n = (cards.match(/class="play"/g)||[]).length;
+    shown += n;
+    return `<section class="sec" style="--h:${s.hue}"><h2><span class="dot"></span>${s.name}
+      <span class="blurb">${s.blurb}</span><span class="n">${n}</span></h2>
+      <div class="grid">${cards}</div></section>`;
+  }).join("");
+  if(!shown) el("out").innerHTML =
+    `<div class="empty">Nothing matches &ldquo;${esc(query)}&rdquo;.<br>Try ladder, whale, rebill, tease, quota.</div>`;
+  el("count").textContent = shown + (shown===1?" play":" plays");
+}
+
+// number the plays within each section
+SECTIONS.forEach(s=>{let k=0; PLAYS.forEach(p=>{if(p.s===s.id) p.n=++k;});});
+
+el("out").addEventListener("click", e=>{
+  const cp = e.target.closest("[data-say]");
+  if(cp){ e.stopPropagation();
+    navigator.clipboard.writeText(cp.dataset.say).then(()=>{
+      cp.textContent="Copied"; cp.classList.add("ok");
+      setTimeout(()=>{cp.textContent="Copy";cp.classList.remove("ok");},1400);
+    }).catch(()=>{cp.textContent="Select it";});
+    return; }
+  const c = e.target.closest(".play");
+  if(c){ const open=c.classList.toggle("open"); c.setAttribute("aria-expanded",open); }
+});
+el("out").addEventListener("keydown", e=>{
+  if(e.key!==" " && e.key!=="Enter") return;
+  const c=e.target.closest(".play"); if(!c) return;
+  e.preventDefault();
+  const open=c.classList.toggle("open"); c.setAttribute("aria-expanded",open);
+});
+el("chips").addEventListener("click", e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  filter=b.dataset.f;
+  [...el("chips").children].forEach(x=>x.classList.toggle("on",x===b));
+  render(); window.scrollTo({top:0,behavior:"smooth"});
+});
+el("q").addEventListener("input", e=>{ query=e.target.value.trim().toLowerCase(); render(); });
+
+el("stamp").textContent = "Updated 9 September 2026 · 32 plays";
+render();
+</script>
+
+</body>
+</html>
