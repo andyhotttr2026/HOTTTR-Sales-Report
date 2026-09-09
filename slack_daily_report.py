@@ -12,6 +12,8 @@ SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_DAILY') or os.environ.get('SLACK_W
 # workflow's webhook-less "build" step exited 1 and killed the job before the
 # send step ever ran. That is why no daily report fired after 11 Aug 2026.
 MODE = (sys.argv[1] if len(sys.argv) > 1 else "send").lower()
+PAGES_URL    = os.environ.get('PAGES_URL',
+               'https://andyhotttr2026.github.io/HOTTTR-Sales-Report/daily.html')
 BASE         = "https://openapi.infloww.com"
 UA           = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS      = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
@@ -37,7 +39,7 @@ def yesterday_london():
     end         = int(datetime(y, m, d, 23, 59, 59, tzinfo=tz_yest).timestamp() * 1000)
     tz_label    = "BST" if tz_yest.utcoffset(None).seconds == 3600 else "GMT"
     label       = f"{yest.strftime('%A, %B')} {yest.day}, {yest.year}"
-    return start, end, label, tz_label
+    return start, end, label, tz_label, yest.isoformat()
 
 # ── API helpers ───────────────────────────────────────────────────────────────
 
@@ -65,7 +67,7 @@ def fetch_day(creator_id, start, end):
 
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
-DAY_START, DAY_END, DAY_LABEL, TZ_LABEL = yesterday_london()
+DAY_START, DAY_END, DAY_LABEL, TZ_LABEL, DAY_ISO = yesterday_london()
 
 creators    = get("/v1/creators?limit=100")["data"]["list"]
 results     = {}
@@ -112,6 +114,14 @@ table_lines.append(f"{'   TOTAL':<{col_w+3}}  ${grand_net/100:>8.2f}    {total_s
 
 table_str = "\n".join(table_lines)
 
+# Dashboard for Pages. Written in every mode so the workflow's build step has
+# something to commit and the Slack link always resolves.
+from daily_widget import write_widget
+write_widget(DAY_LABEL, TZ_LABEL, DAY_ISO, sorted_creators,
+             {"net": grand_net, "gross": grand_gross,
+              "new": grand_new, "ren": grand_ren})
+print(f"Wrote docs/daily.html + docs/archive/daily-{DAY_ISO}.html")
+
 blocks = [
     {
         "type": "header",
@@ -136,6 +146,11 @@ blocks = [
     {
         "type": "section",
         "text": {"type": "mrkdwn", "text": f"*Creator Breakdown*\n```{table_str}```"}
+    },
+    {
+        "type": "context",
+        "elements": [{"type": "mrkdwn",
+            "text": f"<{PAGES_URL}|Open the dashboard>  ·  pulled live from Infloww · refunds excluded · net = after the 20% OnlyFans fee"}]
     }
 ]
 
