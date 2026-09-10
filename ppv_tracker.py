@@ -21,6 +21,8 @@ API_KEY = os.environ.get("INFLOWW_API_KEY")
 OID     = os.environ.get("INFLOWW_OID")
 WEBHOOK = os.environ.get("SLACK_WEBHOOK_PPV") or os.environ.get("SLACK_WEBHOOK_DAILY") \
           or os.environ.get("SLACK_WEBHOOK_URL")
+BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")     # xoxb-... , needs files:write
+PPV_CHAN  = os.environ.get("SLACK_PPV_CHANNEL")   # channel id, e.g. C0ABC123
 BASE    = "https://openapi.infloww.com"
 UA      = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
 HEADERS = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "application/json"}
