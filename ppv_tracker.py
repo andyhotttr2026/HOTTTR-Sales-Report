@@ -303,11 +303,33 @@ def upload_png(path, token, channel, comment):
     return True
 
 
+def text_breakdown():
+    """Readable per-team breakdown. The image is the glance; this is the detail."""
+    out = [f"*PPV Tracker — {DAY:%A}, {DAY:%B} {DAY.day}*  ·  day {DAY_N} of 7",
+           f"*{tot['sent']}* sent today · *{tot['unl']}* unlocked "
+           f"({rate(tot['unl'], tot['sent'])}) · week *{tot['wsent']}/{tot['quota']}* "
+           f"against a pace of {tot['pace']:.0f}"]
+    for team, g, t in by_team:
+        dot = ("✅" if t["quota"] and t["wsent"] >= t["quota"]
+               else "🟢" if t["quota"] and t["wsent"] >= t["pace"] else "🔴")
+        out.append("")
+        out.append(f"{dot}  *{team}* — {t['sent']} sent today · "
+                   f"week {t['wsent']}/{t['quota']} · {t['left']} to go")
+        for r in g:
+            note = ""
+            if r["sent"] == 0 and r["dm"] < 50:   note = "  _(no shift)_"
+            elif r["sent"] == 0:                  note = "  _(no offers)_"
+            behind = ""
+            if r["quota"] and r["wsent"] < r["pace"]:
+                behind = f" · {r['pace'] - r['wsent']:.0f} behind"
+            out.append(f"    • *{r['name']}* — {r['sent']} sent, {r['unl']} unlocked "
+                       f"({rate(r['unl'], r['sent'])}) · week {r['wsent']}/{r['quota'] or '—'}"
+                       f"{behind}{note}")
+    return "\n".join(out)
+
+
 if MODE == "send":
-    summary = (f"*PPV Tracker — {DAY:%A}, {DAY:%B} {DAY.day}*  ·  day {DAY_N} of 7\n"
-               f"{tot['sent']} sent today · {tot['unl']} unlocked "
-               f"({rate(tot['unl'], tot['sent'])}) · "
-               f"week {tot['wsent']}/{tot['quota']} against a pace of {tot['pace']:.0f}")
+    summary = text_breakdown()
     posted = False
 
     if BOT_TOKEN and PPV_CHAN and png and os.path.exists(png):
