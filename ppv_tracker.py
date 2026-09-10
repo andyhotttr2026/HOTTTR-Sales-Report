@@ -13,7 +13,7 @@ the table and to know each person's target.
 Quotas are PPVs SENT per chatter per week, Monday to Sunday.
 The Infloww employee report is daily-only — there is no sub-day granularity.
 """
-import urllib.request, urllib.error, json, os, sys
+import urllib.request, urllib.error, urllib.parse, json, os, sys
 from datetime import datetime, timezone, timedelta, date
 from collections import defaultdict
 
@@ -261,15 +261,68 @@ def slack_blocks():
     ]
 
 
+def slack_api(method, token, payload):
+    req = urllib.request.Request(
+        "https://slack.com/api/" + method,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json; charset=utf-8",
+                 "Authorization": "Bearer " + token},
+        method="POST")
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
+
+
+def upload_png(path, token, channel, comment):
+    """Slack's three-step external upload. Returns True on success."""
+    size = os.path.getsize(path)
+    q = urllib.parse.urlencode({"filename": os.path.basename(path), "length": size})
+    req = urllib.request.Request(
+        "https://slack.com/api/files.getUploadURLExternal?" + q,
+        headers={"Authorization": "Bearer " + token}, method="GET")
+    with urllib.request.urlopen(req, timeout=30) as r:
+        step1 = json.loads(r.read())
+    if not step1.get("ok"):
+        print("  getUploadURLExternal failed:", step1.get("error")); return False
+
+    with open(path, "rb") as f:
+        body = f.read()
+    put = urllib.request.Request(step1["upload_url"], data=body,
+                                 headers={"Content-Type": "application/octet-stream"},
+                                 method="POST")
+    with urllib.request.urlopen(put, timeout=60) as r:
+        r.read()
+
+    step3 = slack_api("files.completeUploadExternal", token, {
+        "files": [{"id": step1["file_id"], "title": os.path.basename(path)}],
+        "channel_id": channel,
+        "initial_comment": comment})
+    if not step3.get("ok"):
+        print("  completeUploadExternal failed:", step3.get("error")); return False
+    return True
+
+
 if MODE == "send":
-    if not WEBHOOK:
-        print("\nERROR: no SLACK_WEBHOOK_PPV / _DAILY / _URL set"); sys.exit(1)
-    req = urllib.request.Request(WEBHOOK, data=json.dumps({"blocks": slack_blocks()}).encode(),
-                                 headers={"Content-Type": "application/json"}, method="POST")
-    try:
-        urllib.request.urlopen(req, timeout=15)
-        print(f"\nSent to Slack: {DAY} · {tot['sent']} sent · {tot['unl']} unlocked")
-    except urllib.error.HTTPError as e:
-        print(f"\nSlack error {e.code}: {e.read().decode()}"); sys.exit(1)
+    summary = (f"*PPV Tracker — {DAY:%A}, {DAY:%B} {DAY.day}*  ·  day {DAY_N} of 7\n"
+               f"{tot['sent']} sent today · {tot['unl']} unlocked "
+               f"({rate(tot['unl'], tot['sent'])}) · "
+               f"week {tot['wsent']}/{tot['quota']} against a pace of {tot['pace']:.0f}")
+    posted = False
+
+    if BOT_TOKEN and PPV_CHAN and png and os.path.exists(png):
+        posted = upload_png(png, BOT_TOKEN, PPV_CHAN, summary)
+        if posted:
+            print(f"\nPosted image to Slack: {DAY} · {tot['sent']} sent")
+
+    if not posted:
+        if not WEBHOOK:
+            print("\nERROR: no bot token/channel and no webhook set"); sys.exit(1)
+        req = urllib.request.Request(
+            WEBHOOK, data=json.dumps({"blocks": slack_blocks()}).encode(),
+            headers={"Content-Type": "application/json"}, method="POST")
+        try:
+            urllib.request.urlopen(req, timeout=15)
+            print(f"\nPosted text to Slack (no image): {DAY} · {tot['sent']} sent")
+        except urllib.error.HTTPError as e:
+            print(f"\nSlack error {e.code}: {e.read().decode()}"); sys.exit(1)
 else:
     print(f"\n[{MODE}] not posting to Slack.")

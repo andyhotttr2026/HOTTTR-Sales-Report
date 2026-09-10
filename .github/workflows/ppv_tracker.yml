@@ -1,0 +1,57 @@
+name: HOTTTR PPV Tracker
+
+on:
+  schedule:
+    # 05:19 UTC = ~06:19 BST, just after the daily report.
+    # :19 rather than :00 — GitHub drops top-of-hour crons under load.
+    - cron: '19 5 * * *'
+  workflow_dispatch:      # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write         # to commit the rendered image + html into docs/
+
+concurrency:
+  group: hotttr-reports   # shared with the other reports so docs/ pushes don't race
+  cancel-in-progress: false
+
+jobs:
+  ppv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Needed to turn the dashboard HTML into the PNG that Slack shows.
+      - name: Install Chrome
+        run: |
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ./google-chrome-stable_current_amd64.deb
+          google-chrome --version
+
+      - name: Build and post
+        env:
+          INFLOWW_API_KEY:    ${{ secrets.INFLOWW_API_KEY }}
+          INFLOWW_OID:        ${{ secrets.INFLOWW_OID }}
+          SLACK_BOT_TOKEN:    ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_PPV_CHANNEL:  ${{ secrets.SLACK_PPV_CHANNEL }}
+          # Fallback: if the bot token or channel is missing, post the text version.
+          SLACK_WEBHOOK_PPV:  ${{ secrets.SLACK_WEBHOOK_PPV }}
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python ppv_tracker.py send
+
+      - name: Publish dashboard to docs/
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --staged --quiet; then echo "nothing to publish"; else
+            git commit -m "Update PPV tracker [skip ci]"
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            git push origin HEAD:${{ github.ref_name }}
+          fi
