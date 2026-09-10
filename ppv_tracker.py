@@ -206,6 +206,14 @@ print(f"{'AGENCY':<11}{tot['sent']:>6}{tot['unl']:>6}{rate(tot['unl'],tot['sent'
       f"{tot['dm']:>7}{tot['fans']:>6}{M(tot['sales']):>12}{tot['wsent']:>9}"
       f"{tot['quota']:>7}{max(tot['quota']-tot['wsent'],0):>6}  pace {tot['pace']:.0f}")
 
+try:
+    from ppv_widget import write_widget
+    png = write_widget(DAY, DAY_N, WK_MON, by_team, tot)
+    print("\nWrote docs/ppv.html" + (f" and {png}" if png else " (no PNG - Chrome missing)"))
+except Exception as e:
+    png = None
+    print(f"\nWidget render failed: {e}")
+
 zero = [r["name"] for r in rows if r["sent"] == 0 and r["dm"] < 50]
 idle = [r["name"] for r in rows if r["sent"] == 0 and r["dm"] >= 50]
 if zero: print(f"\nSent nothing, barely messaged: {', '.join(zero)} — likely did not work.")
