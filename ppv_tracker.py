@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""HOTTTR PPV tracker — what each chatter actually sent.
+"""HOTTTR PPV tracker — what each chatter actually sent, grouped by team.
 
     py ppv_tracker.py            # yesterday, print only
     py ppv_tracker.py dry        # same
     py ppv_tracker.py send       # post to Slack
     py ppv_tracker.py dry 2026-09-08
 
-Driven entirely by what the data shows, not by the rota. Anyone with activity
-that day appears; anyone with none does not. No shift labels, no assumptions
-about who was meant to be working.
+Driven by what the data shows, not by the rota. Anyone with activity appears;
+nobody is assumed to have been working. Team membership is used only to group
+the table and to know each person's target.
 
 Quotas are PPVs SENT per chatter per week, Monday to Sunday.
 The Infloww employee report is daily-only — there is no sub-day granularity.
@@ -28,11 +28,17 @@ HEADERS = {"Authorization": API_KEY, "x-oid": OID, "User-Agent": UA, "Accept": "
 MODE     = (sys.argv[1] if len(sys.argv) > 1 else "dry").lower()
 ARG_DATE = sys.argv[2] if len(sys.argv) > 2 else None
 
-# Weekly PPV-sent quota per chatter. The only roster the report needs.
-QUOTA = {name: 100 for name in ("Cherubim", "David", "Aian", "Thomas", "Kennth", "Jayk")}
-QUOTA.update({name: 60 for name in ("Mark", "Bea", "Jericho", "Drew", "Audrey")})
+# Team membership and the weekly PPV-sent quota that comes with it.
+TEAMS = [
+    ("Team 1", 100, ["David", "Aian", "Thomas"]),
+    ("Team 2", 100, ["Cherubim", "Kennth", "Jayk"]),
+    ("Team 3",  60, ["Jericho", "Drew", "Bea"]),
+    ("Team 4",  60, ["Audrey", "Mark"]),
+]
+QUOTA  = {n: q for _, q, mem in TEAMS for n in mem}
+TEAMOF = {n: t for t, _, mem in TEAMS for n in mem}
 
-# Kept out of the ranking: the Sales Director and the Team Lead are not chatters,
+# Kept out of the ranking: the Sales Director and Team Lead are not chatters,
 # and Jafferson is excluded by standing instruction.
 EXCLUDE = {"Jafferson", "Andre", "Team Lead - Angie", "Angie"}
 
@@ -89,11 +95,10 @@ def collect(d1, d2):
         agg[r["employeeName"]]["sales"] += int(r.get("ppvSalesAmount") or 0)
     for r in employee_report("chat", d1, d2):
         a = agg[r["employeeName"]]
-        a["sent"]     += int(r.get("directPpvsSent") or 0)
-        a["unl"]      += int(r.get("ppvsUnlocked") or 0)
-        a["fans"]     += int(r.get("fansChatted") or 0)
-        a["dm"]       += int(r.get("directMessagesSent") or 0)
-        a["creators"] += 1
+        a["sent"] += int(r.get("directPpvsSent") or 0)
+        a["unl"]  += int(r.get("ppvsUnlocked") or 0)
+        a["fans"] += int(r.get("fansChatted") or 0)
+        a["dm"]   += int(r.get("directMessagesSent") or 0)
     return agg
 
 
@@ -119,7 +124,7 @@ def rate(u, s): return f"{u/s*100:.0f}%" if s else "—"
 def M(c):       return f"${c/100:,.2f}"
 
 
-# Everyone who did anything on the day or so far this week.
+# ── rows ──────────────────────────────────────────────────────────────────────
 people = {n for n in set(day_agg) | set(week_agg) if n not in EXCLUDE}
 rows = []
 for n in people:
@@ -129,85 +134,108 @@ for n in people:
     rows.append(dict(
         name=n, quota=q,
         sent=d.get("sent", 0), unl=d.get("unl", 0), dm=d.get("dm", 0),
-        fans=d.get("fans", 0), sales=d.get("sales", 0), creators=d.get("creators", 0),
-        wsent=wsent, wunl=w.get("unl", 0), wsales=w.get("sales", 0),
+        fans=d.get("fans", 0), sales=d.get("sales", 0),
+        wsent=wsent, wunl=w.get("unl", 0),
         left=max(q - wsent, 0) if q else None,
         pace=(q * DAY_N / 7) if q else None))
-rows.sort(key=lambda r: (-r["sent"], -r["wsent"], r["name"]))
 
 tot = defaultdict(int)
 for r in rows:
-    for k in ("sent", "unl", "dm", "fans", "sales", "wsent", "wunl", "wsales"):
+    for k in ("sent", "unl", "dm", "fans", "sales", "wsent", "wunl"):
         tot[k] += r[k]
     if r["quota"]: tot["quota"] += r["quota"]
 tot["pace"] = tot["quota"] * DAY_N / 7
 
-groups = []
-for label, q in (("100 / week", 100), ("60 / week", 60)):
-    g = [r for r in rows if r["quota"] == q]
-    if not g: continue
-    groups.append(dict(label=label, n=len(g),
-                       sent=sum(r["sent"] for r in g), unl=sum(r["unl"] for r in g),
-                       wsent=sum(r["wsent"] for r in g),
-                       quota=sum(r["quota"] for r in g),
-                       pace=sum(r["pace"] for r in g)))
+
+def sub(g):
+    d = {k: sum(r[k] for r in g) for k in
+         ("sent", "unl", "dm", "fans", "sales", "wsent", "wunl")}
+    d["quota"] = sum(r["quota"] or 0 for r in g)
+    d["pace"]  = sum(r["pace"] or 0 for r in g)
+    d["left"]  = max(d["quota"] - d["wsent"], 0)
+    return d
+
+
+by_team = []
+for team, q, mem in TEAMS:
+    g = sorted([r for r in rows if TEAMOF.get(r["name"]) == team],
+               key=lambda r: (-r["sent"], -r["wsent"], r["name"]))
+    if g: by_team.append((team, g, sub(g)))
+other = sorted([r for r in rows if r["name"] not in TEAMOF],
+               key=lambda r: (-r["sent"], r["name"]))
+if other: by_team.append(("Not on a team", other, sub(other)))
+
+
+def status(r):
+    if not r["quota"]:           return "no quota set"
+    if r["wsent"] >= r["quota"]: return "MET"
+    if r["wsent"] >= r["pace"]:  return "on pace"
+    return f"{r['pace'] - r['wsent']:.0f} behind"
+
+
+def tstatus(t):
+    if not t["quota"]:           return ""
+    if t["wsent"] >= t["quota"]: return "MET"
+    if t["wsent"] >= t["pace"]:  return "on pace"
+    return "SHORT"
+
 
 # ── print ─────────────────────────────────────────────────────────────────────
-print("\n" + "=" * 86)
-print(f"PPV TRACKER — {DAY:%A %d %B %Y}   (day {DAY_N} of 7, week of {WK_MON:%d %b})")
-print("=" * 86)
-print(f"\n{'chatter':<11}{'sent':>6}{'unlk':>6}{'rate':>7}{'DMs':>7}{'fans':>6}"
-      f"{'PPV sales':>12}{'wk sent':>9}{'quota':>7}{'left':>6}  status")
-for r in rows:
-    if r["quota"] is None:
-        st = "no quota set"
-    elif r["wsent"] >= r["quota"]:
-        st = "MET"
-    elif r["wsent"] >= r["pace"]:
-        st = "on pace"
-    else:
-        st = f"{r['pace'] - r['wsent']:.0f} behind"
-    print(f"{r['name'][:11]:<11}{r['sent']:>6}{r['unl']:>6}{rate(r['unl'],r['sent']):>7}"
-          f"{r['dm']:>7}{r['fans']:>6}{M(r['sales']):>12}{r['wsent']:>9}"
-          f"{r['quota'] if r['quota'] else '—':>7}{r['left'] if r['left'] is not None else '—':>6}"
-          f"  {st}")
-print(f"\n{'TOTAL':<11}{tot['sent']:>6}{tot['unl']:>6}{rate(tot['unl'],tot['sent']):>7}"
-      f"{tot['dm']:>7}{tot['fans']:>6}{M(tot['sales']):>12}{tot['wsent']:>9}"
-      f"{tot['quota']:>7}{max(tot['quota']-tot['wsent'],0):>6}"
-      f"  pace {tot['pace']:.0f}")
+HDR = (f"{'chatter':<11}{'sent':>6}{'unlk':>6}{'rate':>7}{'DMs':>7}{'fans':>6}"
+       f"{'PPV sales':>12}{'wk sent':>9}{'quota':>7}{'left':>6}  status")
 
-print(f"\n{'quota group':<14}{'people':>7}{'sent':>7}{'unlk':>6}{'wk sent':>9}"
-      f"{'target':>8}{'pace':>7}  status")
-for g in groups:
-    st = "MET" if g["wsent"] >= g["quota"] else ("on pace" if g["wsent"] >= g["pace"] else "SHORT")
-    print(f"{g['label']:<14}{g['n']:>7}{g['sent']:>7}{g['unl']:>6}{g['wsent']:>9}"
-          f"{g['quota']:>8}{g['pace']:>7.0f}  {st}")
+print("\n" + "=" * 88)
+print(f"PPV TRACKER — {DAY:%A %d %B %Y}   (day {DAY_N} of 7, week of {WK_MON:%d %b})")
+print("=" * 88)
+
+for team, g, t in by_team:
+    active = f"{len(g)} {'person' if len(g) == 1 else 'people'} active"
+    print(f"\n{team}   ·   weekly target {t['quota'] or '—'}   ·   {active}")
+    print(HDR)
+    for r in g:
+        print(f"{r['name'][:11]:<11}{r['sent']:>6}{r['unl']:>6}{rate(r['unl'],r['sent']):>7}"
+              f"{r['dm']:>7}{r['fans']:>6}{M(r['sales']):>12}{r['wsent']:>9}"
+              f"{(r['quota'] or '—'):>7}{(r['left'] if r['left'] is not None else '—'):>6}"
+              f"  {status(r)}")
+    print(f"{'  subtotal':<11}{t['sent']:>6}{t['unl']:>6}{rate(t['unl'],t['sent']):>7}"
+          f"{t['dm']:>7}{t['fans']:>6}{M(t['sales']):>12}{t['wsent']:>9}"
+          f"{(t['quota'] or '—'):>7}{t['left']:>6}  {tstatus(t)}")
+
+print("\n" + "-" * 88)
+print(f"{'AGENCY':<11}{tot['sent']:>6}{tot['unl']:>6}{rate(tot['unl'],tot['sent']):>7}"
+      f"{tot['dm']:>7}{tot['fans']:>6}{M(tot['sales']):>12}{tot['wsent']:>9}"
+      f"{tot['quota']:>7}{max(tot['quota']-tot['wsent'],0):>6}  pace {tot['pace']:.0f}")
 
 zero = [r["name"] for r in rows if r["sent"] == 0 and r["dm"] < 50]
-if zero:
-    print(f"\nSent nothing and barely messaged: {', '.join(zero)} — check before reading as underperformance.")
+idle = [r["name"] for r in rows if r["sent"] == 0 and r["dm"] >= 50]
+if zero: print(f"\nSent nothing, barely messaged: {', '.join(zero)} — likely did not work.")
+if idle: print(f"Messaging but not offering: {', '.join(idle)} — worked, sent no PPVs.")
 print("\nFigures are chatter-attributed and GROSS. Unlock counts settle over ~3 days,")
 print("so the most recent days read low; PPVs sent settle faster.")
 
 
 # ── Slack ─────────────────────────────────────────────────────────────────────
 def slack_blocks():
-    L = [f"{'CHATTER':<10}{'SENT':>5}{'UNL':>5}{'RATE':>6}{'DMS':>6}{'WK':>5}{'LEFT':>6}", "─" * 43]
-    for r in rows:
-        L.append(f"{r['name'][:10]:<10}{r['sent']:>5}{r['unl']:>5}{rate(r['unl'],r['sent']):>6}"
-                 f"{r['dm']:>6}{r['wsent']:>5}"
-                 f"{(r['left'] if r['left'] is not None else '—'):>6}")
-    L.append("─" * 43)
-    L.append(f"{'TOTAL':<10}{tot['sent']:>5}{tot['unl']:>5}{rate(tot['unl'],tot['sent']):>6}"
+    L = []
+    for team, g, t in by_team:
+        L.append(f"{team.upper():<10}{'SENT':>5}{'UNL':>5}{'RATE':>6}{'DMS':>6}{'WK':>5}{'LEFT':>6}")
+        for r in g:
+            L.append(f"  {r['name'][:8]:<8}{r['sent']:>5}{r['unl']:>5}"
+                     f"{rate(r['unl'],r['sent']):>6}{r['dm']:>6}{r['wsent']:>5}"
+                     f"{(r['left'] if r['left'] is not None else '—'):>6}")
+        L.append(f"  {'total':<8}{t['sent']:>5}{t['unl']:>5}{rate(t['unl'],t['sent']):>6}"
+                 f"{t['dm']:>6}{t['wsent']:>5}{t['left']:>6}")
+        L.append("")
+    L.append(f"{'AGENCY':<10}{tot['sent']:>5}{tot['unl']:>5}{rate(tot['unl'],tot['sent']):>6}"
              f"{tot['dm']:>6}{tot['wsent']:>5}{max(tot['quota']-tot['wsent'],0):>6}")
     gs = "   ".join(
-        f"*{g['label']}* {g['wsent']}/{g['quota']}"
-        f" {'✅' if g['wsent']>=g['quota'] else ('🟢' if g['wsent']>=g['pace'] else '🔴')}"
-        for g in groups)
-    top = rows[0] if rows and rows[0]["sent"] else None
+        f"*{team}* {t['wsent']}/{t['quota']}"
+        f" {'✅' if t['wsent'] >= t['quota'] else ('🟢' if t['wsent'] >= t['pace'] else '🔴')}"
+        for team, g, t in by_team if t["quota"])
+    top = max(rows, key=lambda r: r["sent"]) if rows else None
+    head = f"📨 PPV Tracker — {DAY:%A}, {DAY:%B} {DAY.day}, {DAY.year}"
     return [
-        {"type": "header", "text": {"type": "plain_text",
-         "text": f"📨 PPV Tracker — {DAY:%A}, {DAY:%B} {DAY.day}, {DAY.year}"}},
+        {"type": "header", "text": {"type": "plain_text", "text": head}},
         {"type": "context", "elements": [{"type": "mrkdwn",
          "text": f"Day {DAY_N} of 7 · week of {WK_MON:%d %b} · quota is PPVs *sent*"}]},
         {"type": "section", "fields": [
@@ -216,8 +244,9 @@ def slack_blocks():
             {"type": "mrkdwn", "text": f"*PPV sales (gross)*\n{M(tot['sales'])}"},
             {"type": "mrkdwn", "text": f"*Week to date*\n{tot['wsent']} / {tot['quota']} · pace {tot['pace']:.0f}"}]},
         {"type": "section", "text": {"type": "mrkdwn",
-         "text": f"*Weekly quota*  {gs}" + (f"\n*Top today*  {top['name']} — {top['sent']} sent" if top else "")}},
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"```{chr(10).join(L)}```"}},
+         "text": f"*Weekly quota*\n{gs}" +
+                 (f"\n*Top today*  {top['name']} — {top['sent']} sent" if top and top["sent"] else "")}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"```{chr(10).join(L).rstrip()}```"}},
         {"type": "context", "elements": [{"type": "mrkdwn",
          "text": "Chatter-attributed, gross · unlock counts settle over ~3 days · "
                  "a zero with few DMs usually means the shift did not run"}]},
