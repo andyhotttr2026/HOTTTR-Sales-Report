@@ -1,0 +1,454 @@
+<title>HOTTTR Shift Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#f8f5f7; --surface:#fff; --raise:#fdf2f6; --sunk:#efe6ec;
+  --ink:#211a20; --ink-2:#5a4c54; --muted:#897a83; --faint:#b4a5ad;
+  --line:#eadce3; --line-2:#dbc8d3;
+  --accent:#c23f74; --accent-2:#e8629a; --accent-soft:#fdeef4;
+  --ok:#0f7550; --ok-soft:#e3f3eb;
+  --bad:#b93526; --bad-soft:#fbe9e6;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#141015; --surface:#1c171f; --raise:#261d26; --sunk:#0f0c10;
+  --ink:#f3edf0; --ink-2:#c6b7c0; --muted:#968791; --faint:#675962;
+  --line:#312832; --line-2:#443944;
+  --accent:#ef7aa9; --accent-2:#f79cc0; --accent-soft:#2c1b25;
+  --ok:#4fc794; --ok-soft:#122c23;
+  --bad:#f0806f; --bad-soft:#311b19;
+}}
+:root[data-theme="dark"]{
+  --ground:#141015; --surface:#1c171f; --raise:#261d26; --sunk:#0f0c10;
+  --ink:#f3edf0; --ink-2:#c6b7c0; --muted:#968791; --faint:#675962;
+  --line:#312832; --line-2:#443944;
+  --accent:#ef7aa9; --accent-2:#f79cc0; --accent-soft:#2c1b25;
+  --ok:#4fc794; --ok-soft:#122c23;
+  --bad:#f0806f; --bad-soft:#311b19;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+     font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:700px;margin:0 auto;padding-inline:16px;padding-block:22px 70px}
+h1,h2{font-family:var(--display);margin:0;letter-spacing:-.015em}
+h1{font-size:24px;font-weight:800}
+.sub{color:var(--ink-2);font-size:14px;margin-top:3px}
+.top{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:18px}
+
+h2{font-size:11px;font-family:var(--mono);font-weight:600;letter-spacing:.12em;
+   text-transform:uppercase;color:var(--muted);margin:26px 0 9px}
+
+/* the order */
+.order{background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;overflow:hidden}
+.oh{background:var(--accent);color:#fff;padding:11px 16px}
+.oh b{font-family:var(--display);font-size:16px;font-weight:700;display:block}
+.oh span{font-size:12.5px;opacity:.92}
+.o{display:flex;gap:13px;padding:13px 16px;border-bottom:1px solid var(--line);align-items:flex-start}
+.o:last-child{border-bottom:none}
+.o .n{flex:none;width:25px;height:25px;border-radius:50%;background:var(--accent-soft);
+      color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;margin-top:1px}
+.o b{display:block;font-size:15.5px;font-weight:600;line-height:1.3}
+.o i{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}
+.o.last{background:var(--sunk)}
+.o.last .n{background:var(--line-2);color:var(--muted)}
+
+.targ{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.targ>div{flex:1 1 130px;background:var(--surface);border:1px solid var(--line-2);border-radius:7px;
+          padding:9px 12px}
+.targ b{display:block;font-family:var(--display);font-size:20px;font-weight:800;color:var(--accent);
+        line-height:1.1}
+.targ span{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+           color:var(--muted)}
+
+details{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;
+        margin-bottom:8px;overflow:hidden}
+summary{padding:13px 16px;cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;
+        display:flex;justify-content:space-between;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);color:var(--accent);font-size:18px;font-weight:700}
+details[open] summary::after{content:"\2212"}
+summary:hover{background:var(--raise)}
+.dc{padding:0 16px 15px;border-top:1px solid var(--line)}
+.dc p{font-size:14px;line-height:1.55;margin:10px 0}
+.dc h3{font-size:11px;font-family:var(--mono);letter-spacing:.09em;text-transform:uppercase;
+       color:var(--accent);margin:15px 0 6px;font-weight:600}
+.ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}
+.ops>div{background:var(--accent-soft);border-radius:6px;padding:8px 10px;font-family:var(--mono);
+         font-size:13px;color:var(--ink)}
+.lad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:9px 0}
+.lad>div{background:var(--accent-soft);border-radius:7px;padding:9px 4px;text-align:center}
+.lad b{display:block;font-family:var(--display);font-size:15px;font-weight:800;color:var(--accent)}
+.lad i{font-style:normal;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.say{background:var(--ok-soft);border-left:3px solid var(--ok);border-radius:0 6px 6px 0;
+     padding:10px 13px;margin:9px 0;font-size:14px;line-height:1.5}
+.say b{display:block;font-size:12px;color:var(--ok);font-family:var(--mono);text-transform:uppercase;
+       letter-spacing:.06em;margin-bottom:3px}
+.say em{display:block;font-style:normal;color:var(--muted);font-size:12.5px;margin-top:4px}
+.never{background:var(--bad-soft);border-left:3px solid var(--bad);border-radius:0 6px 6px 0;
+       padding:10px 13px;margin:9px 0}
+.never p{margin:4px 0;font-size:14px;color:var(--ink-2)}
+
+.who{display:flex;gap:9px;margin-bottom:10px}
+select,textarea{font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line-2);border-radius:6px;padding:10px 12px}
+select{flex:1}
+textarea{width:100%;min-height:82px;resize:vertical}
+select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);margin-bottom:5px;font-weight:500}
+.btns{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:11px}
+button{font-family:var(--sans);font-size:15px;font-weight:600;border:none;border-radius:6px;
+       padding:12px 20px;background:var(--accent);color:#fff;cursor:pointer}
+button:hover{background:var(--accent-2)}
+button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line-2)}
+button.ghost:hover{background:var(--raise);color:var(--ink)}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.flash{font-family:var(--mono);font-size:12.5px;color:var(--ok);font-weight:600}
+pre{background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:13px 14px;
+    font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre-wrap;
+    word-break:break-word;margin:10px 0 0}
+.check{background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;
+       overflow:hidden;margin-bottom:14px}
+.cht{background:var(--accent);color:#fff;padding:11px 16px}
+.cht b{font-family:var(--display);font-size:15.5px;font-weight:700;display:block}
+.cht span{font-size:12.5px;opacity:.92}
+.ci{padding:12px 16px;border-bottom:1px solid var(--line)}
+.ci:hover{background:var(--raise)}
+.ci.on{background:var(--ok-soft)}
+.ci label{display:flex;align-items:flex-start;gap:13px;cursor:pointer;user-select:none}
+.ci label input{width:23px;height:23px;flex:none;margin:0;accent-color:var(--ok);cursor:pointer}
+.ci label span{font-size:15px;line-height:1.35;padding-top:1px}
+.ev{display:flex;align-items:center;gap:9px;margin:8px 0 0 36px;flex-wrap:wrap}
+.ev input{font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--ground);
+  border:1px solid var(--line-2);border-radius:5px;padding:7px 10px;width:80px}
+.ev.wide input{width:100%;flex:1 1 220px;font-family:var(--mono);font-size:13px}
+.ev input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.ev em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);
+       letter-spacing:.04em}
+.ev input.missing{border-color:var(--bad);background:var(--bad-soft)}
+.cf{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 16px;
+    background:var(--raise);border-top:1px solid var(--line-2);flex-wrap:wrap}
+.cf span:first-child{font-family:var(--display);font-weight:800;font-size:15px;color:var(--accent)}
+.cf span:last-child{font-size:12px;color:var(--muted);line-height:1.4}
+.foot{margin-top:26px;padding-top:15px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:13px;line-height:1.6}
+.foot b{color:var(--ink-2)}
+@media (max-width:520px){.lad{grid-template-columns:repeat(2,1fr)}.who{flex-direction:column}}
+</style>
+
+<div class="wrap">
+<div class="top">
+  <h1>Shift sheet</h1>
+  <div class="sub"><b>Eight boxes and a handover before you log off.</b> Everything under them is
+  reference &mdash; what to work on next and what to say. That's it.</div>
+</div>
+
+<h2>Before you log off<span>fill this in, then paste it into Discord</span></h2>
+<div class="check">
+  <div class="cht"><b>Eight things, once.</b>
+    <span>Your numbers come out of Infloww — these are the ones only you know.</span></div>
+  <div class="ci"><label><input type="checkbox" data-i="8"><span>I was clocked in on Infloww for
+    my whole shift</span></label>
+    <div class="ev"><em>this one is checked automatically &mdash; Infloww records no reply time at
+    all if you were not clocked in</em></div></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="0"><span>I read the handover from the last
+    shift</span></label></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="1"><span>Everyone who messaged me has been
+    answered</span></label></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="2"><span>Every offer I sent that wasn't
+    opened got chased</span></label>
+    <div class="ev"><input type="number" min="0" data-e="2" placeholder="0"
+      aria-label="How many chased"><em>how many did you chase</em></div></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="3"><span>Everyone who bought from me got
+    offered something else</span></label>
+    <div class="ev"><input type="number" min="0" data-e="3" placeholder="0"
+      aria-label="How many re-offered"><em>how many buyers re-offered</em></div></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="4"><span>Big spenders on my accounts have
+    been contacted</span></label>
+    <div class="ev wide"><input type="text" data-e="4"
+      placeholder="e.g. u1234567, u7654321, samplefan"
+      aria-label="Which big spenders"><em>paste their usernames &mdash; this gets checked</em></div></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="6"><span>Custom requests are logged and
+    chased</span></label>
+    <div class="ev wide"><input type="text" data-e="6"
+      placeholder="u1234567 — $80 agreed, due Friday. Or: none this shift"
+      aria-label="Which customs"><em>fan, price, when it's due</em></div></div>
+
+  <div class="ci"><label><input type="checkbox" data-i="7"><span>Handover written and passed to the
+    next shift</span></label></div>
+  <div class="cf"><span id="cn">0 of 8</span><span>A box you tick with the field left blank prints
+    as &ldquo;not recorded&rdquo;. Anything unticked prints too &mdash; say why in the
+    handover.</span></div>
+</div>
+
+<div class="who">
+  <select id="name" aria-label="Your name"><option value="">Your name…</option>
+    <option>Aian</option><option>Audrey</option><option>Bea</option><option>Cherubim</option>
+    <option>David</option><option>Drew</option><option>Jafferson</option><option>Jayk</option>
+    <option>Jericho</option><option>Kennth</option><option>Mark</option><option>Thomas</option>
+  </select>
+  <select id="shift" aria-label="Shift"><option value="">Shift…</option>
+    <option value="1">Shift 1</option><option value="2">Shift 2</option>
+    <option value="3">Shift 3</option></select>
+</div>
+<label for="notes">Handover — what the next shift needs to know</label>
+<textarea id="notes" placeholder="Hot leads, whales mid-conversation, customs owed, anything broken or unfinished."></textarea>
+<div class="btns">
+  <button id="copy">Copy for Discord</button>
+  <button class="ghost" id="clear">Clear</button>
+  <span class="flash" id="flash"></span>
+</div>
+<pre id="out">Pick your name and shift.</pre>
+
+<h2>While you are on shift<span>everything below is reference</span></h2>
+<div class="order">
+  <div class="oh"><b>Free right now? Work down this list.</b>
+    <span>Stop at the first thing you find. Then start again from the top.</span></div>
+
+  <div class="o"><div class="n">1</div><div>
+    <b>Anyone waiting on a reply</b>
+    <i>Answer them first, always. Under three minutes. A reply inside a minute is worth nearly
+    double one at five.</i></div></div>
+
+  <div class="o"><div class="n">2</div><div>
+    <b>An offer you sent that wasn't opened</b>
+    <i>Send them something back. This is the thing almost nobody does and it's the easiest money on
+    the list.</i></div></div>
+
+  <div class="o"><div class="n">3</div><div>
+    <b>Someone who bought and hasn't been offered since</b>
+    <i>One step above what they last paid. Never the same price, never lower.</i></div></div>
+
+  <div class="o"><div class="n">4</div><div>
+    <b>A big spender you haven't spoken to today</b>
+    <i>$200 or more. Open with something they told you before, not with an offer.</i></div></div>
+
+  <div class="o"><div class="n">5</div><div>
+    <b>A chat sitting at three to nine replies</b>
+    <i>Get them talking. At ten or more they buy at 45%. Under three, 1%. Don't offer yet.</i></div></div>
+
+  <div class="o"><div class="n">6</div><div>
+    <b>A new sub who hasn't replied</b>
+    <i>Bump them. Different words each time, three touches maximum, then leave them alone.</i></div></div>
+
+  <div class="o last"><div class="n">7</div><div>
+    <b>Genuinely nothing left — send a priority mass message</b>
+    <i>Fans who've spent $25 to $200. Only after one to six. It earns less per fan than anything
+    above it.</i></div></div>
+</div>
+
+<div class="targ">
+  <div><b>14</b><span>offers a shift</span></div>
+  <div><b>3 min</b><span>reply time</span></div>
+  <div><b>45%</b><span>unlock rate</span></div>
+  <div><b>3+</b><span>replies before you price</span></div>
+</div>
+
+<h2>What to say</h2>
+
+<details><summary>Openers</summary>
+<div class="dc">
+  <p><b>Short, and not a question.</b> Under 20 characters gets a reply 66% of the time; 40–80
+  characters gets 17%. Openers with a question mark get 30% replies, without 43% — and twice as many
+  of those fans go on to buy. Make a statement they'll want to answer.</p>
+
+  <h3>They just came online</h3>
+  <div class="ops"><div>you're up late 👀</div><div>so it's just us then</div>
+    <div>knew you'd show up</div><div>perfect timing actually</div></div>
+
+  <h3>Curiosity — they reply to correct you</h3>
+  <div class="ops"><div>bet I can guess where you're from</div><div>you look like trouble</div>
+    <div>you seem like the quiet type</div><div>you're either bored or in bed</div>
+    <div>you've got good taste, I'll say that</div><div>I've decided you're interesting</div></div>
+
+  <h3>Opinion bait — easiest reply there is</h3>
+  <div class="ops"><div>right, I need your opinion</div><div>okay settle something for me</div>
+    <div>alright, be honest with me</div><div>need a second opinion on something</div></div>
+
+  <h3>Warm — for someone who's been around</h3>
+  <div class="ops"><div>you've been quiet on me</div><div>okay you win, I messaged first</div>
+    <div>was hoping you'd message</div><div>bet you've had a long one</div>
+    <div>made me smile, that</div><div>don't be a stranger</div></div>
+
+  <p><b>Change a word every time.</b> Two fans must never get the same line in a shift.
+  <b>Never mention that they just subscribed</b> — "didn't expect you to sub right now" got 42%
+  where "Heyy" got 86%.</p>
+</div></details>
+
+<details><summary>Pricing</summary>
+<div class="dc">
+  <div class="lad">
+    <div><b>$15–25</b><i>open</i></div><div><b>$25–50</b><i>after a yes</i></div>
+    <div><b>$50–100</b><i>then</i></div><div><b>$100+</b><i>proven buyers</i></div>
+  </div>
+  <p><b>Every offer to the same fan goes higher than the last.</b> Fans whose prices climbed every
+  time bought at 63%. Where a price repeated or dropped, 46%.</p>
+  <p><b>Don't price before three replies.</b> Offers sent earlier convert at 23%; at ten or more
+  replies, 45%.</p>
+  <p>Yasmine stops at $100 — re-sell at $50–100 instead. Emma Storm VIP and Fox Heart have no
+  ceiling.</p>
+</div></details>
+
+<details><summary>When they say no</summary>
+<div class="dc">
+  <p>A no is almost never about the number. Work out which one you've got.</p>
+
+  <div class="say"><b>"I can't afford it right now"</b>
+  They want it, the amount is too big in one go. Split it, don't shrink it.<br>
+  → "You can do it in two parts — try $75 and $75 and I'll send that one again unlocked 😘"
+  <em>This closed a fan who said he has trouble over $100.</em></div>
+
+  <div class="say"><b>"Can you do it for $30?"</b>
+  They're negotiating, which means they're buying. Counter with more, not less.<br>
+  → "$34.99? With a soap 🥵"
+  <em>Dropping to $30 teaches them to haggle every time.</em></div>
+
+  <div class="say"><b>"Not tonight" / "maybe later"</b>
+  Soft no. Don't accept it, don't push the same thing. Ask for their number.<br>
+  → "How much can you do right now, lovely?"
+  <em>Turns a vague no into a figure you can work with.</em></div>
+
+  <div class="say"><b>"I've got to go" / "I'm at work"</b>
+  Time, not money. Use their own clock.<br>
+  → "Can I show you something in that 10 minutes?"
+  <em>A fan had ten minutes of his break left and this got the sale moving.</em></div>
+
+  <div class="say"><b>"$200 is mental"</b>
+  The number scared them, not the idea. Drop a tier, agree with them first.<br>
+  → "Lol I get it. If 200 is mental to you, how about the 29 over here? ☝️"
+  <em>Arguing loses the chat.</em></div>
+
+  <div class="say"><b>"It wasn't what you said it was"</b>
+  A complaint, not an objection. Take it, don't debate it.<br>
+  → "You're right, that's on me — let me make it up to you."
+  <em>A fan explained exactly why he'd stopped buying and got argued with. He didn't come back.</em></div>
+
+  <p><b>Never go below a price they already refused.</b> Change the item, hold the number. If you
+  genuinely need to come down, ask your manager — 10% maximum, never twice on the same fan.</p>
+</div></details>
+
+<details><summary>Don't do these</summary>
+<div class="dc"><div class="never">
+  <p>Don't offer before three replies.</p>
+  <p>Don't send the same 40-character message to more than 15 fans.</p>
+  <p>Don't message a fan who has ignored three messages.</p>
+  <p>Don't put a big spender in a mass message.</p>
+  <p>Don't sell below $10.</p>
+  <p>Don't let a fan ask "how much" and answer "up to you".</p>
+</div></div></details>
+
+<div class="foot">
+  <b>Your numbers come out of Infloww automatically.</b> Offers, unlock rate, reply time, bumps and
+  whale contacts are all pulled at the end of each shift — you don't log any of it. The only thing
+  this sheet needs from you is the handover.
+</div>
+</div>
+
+<script>
+(function () {
+  var KEY = "hotttr_sheet_v2";
+  var $ = function (i) { return document.getElementById(i); };
+  var F = ["name", "shift", "notes"];
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".ci input[data-i]"));
+  var evs = Array.prototype.slice.call(document.querySelectorAll(".ci input[data-e]"));
+  var EVLAB = { 2: "Unopened offers chased", 3: "Buyers re-offered",
+                4: "Big spenders contacted", 6: "Customs" };
+
+  function ev(i) {
+    var el = evs.filter(function (e) { return e.dataset.e === String(i); })[0];
+    return el ? el.value.trim() : "";
+  }
+  function save() {
+    try {
+      var o = {}; F.forEach(function (f) { o[f] = $(f).value; });
+      o.ticks = boxes.map(function (b) { return b.checked; });
+      o.evs = evs.map(function (e) { return e.value; });
+      localStorage.setItem(KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY) || "{}");
+      F.forEach(function (f) { if (o[f]) $(f).value = o[f]; });
+      if (Array.isArray(o.ticks)) boxes.forEach(function (b, i) { b.checked = !!o.ticks[i]; });
+      if (Array.isArray(o.evs)) evs.forEach(function (e, i) { e.value = o.evs[i] || ""; });
+    } catch (e) {}
+  }
+  function build() {
+    var done = 0, missed = [], blanks = [];
+    boxes.forEach(function (b) {
+      var row = b.closest(".ci");
+      row.className = "ci" + (b.checked ? " on" : "");
+      var i = +b.dataset.i;
+      if (b.checked) done++;
+      else missed.push(row.querySelector("label span").textContent.replace(/\s+/g, " ").trim());
+      var box = evs.filter(function (e) { return e.dataset.e === String(i); })[0];
+      if (box) {
+        var blank = b.checked && !box.value.trim();
+        box.className = blank ? "missing" : "";
+        if (blank) blanks.push(EVLAB[i]);
+      }
+    });
+    $("cn").textContent = done + " of " + boxes.length;
+    var n = $("name").value, s = $("shift").value;
+    if (!n || !s) { $("out").textContent = "Pick your name and shift."; save(); return; }
+    var d = new Date().toLocaleDateString(undefined,
+      { weekday: "short", day: "numeric", month: "short" });
+    var L = ["**" + n + " — Shift " + s + " — " + d + "**", ""];
+    L.push("Checklist: " + done + "/" + boxes.length +
+           (done === boxes.length ? " — all done" : ""));
+    L.push("");
+    [2, 3, 4, 6].forEach(function (i) {
+      var v = ev(i);
+      L.push(EVLAB[i] + ": " + (v || "not recorded"));
+    });
+    if (missed.length) {
+      L.push("");
+      L.push("Not done:");
+      missed.forEach(function (m) { L.push("- " + m); });
+    }
+    L.push("");
+    L.push("Handover: " + ($("notes").value.trim() || "nothing outstanding"));
+    $("out").textContent = L.join("\n");
+    save();
+  }
+  boxes.forEach(function (b) { b.addEventListener("change", build); });
+  evs.forEach(function (e) { e.addEventListener("input", build); });
+  F.forEach(function (f) {
+    $(f).addEventListener("input", build);
+    $(f).addEventListener("change", build);
+  });
+  $("copy").addEventListener("click", function () {
+    var t = $("out").textContent;
+    function ok() {
+      $("flash").textContent = "Copied — paste it in Discord";
+      setTimeout(function () { $("flash").textContent = ""; }, 3500);
+    }
+    function fb() {
+      var r = document.createRange(); r.selectNodeContents($("out"));
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      $("flash").textContent = "Selected — press Ctrl+C";
+      setTimeout(function () { $("flash").textContent = ""; }, 4000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(ok, fb);
+    } else { fb(); }
+  });
+  $("clear").addEventListener("click", function () {
+    $("notes").value = "";
+    boxes.forEach(function (b) { b.checked = false; });
+    evs.forEach(function (e) { e.value = ""; });
+    build();
+  });
+  load(); build();
+})();
+</script>
