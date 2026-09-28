@@ -164,12 +164,17 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
 .ev em{font-size:12px;white-space:normal;max-width:100%;font-family:var(--sans)}
 .ev input[type=number]{width:96px}
 .ev.wide input,.ev input[type=text]{width:100%}
+
+/* Stacking the hint under the field made the text inputs stretch to the row
+   height and look like textareas. Pin them back to a single line. */
+.ev input[type=text],.ev input[type=number]{height:44px;align-self:auto;flex:0 0 auto}
+.ev input[type=text]{width:100%}
 </style>
 
 <div class="wrap">
 <div class="top">
   <h1>Shift sheet</h1>
-  <div class="sub"><b>Hit four targets. Tick eight boxes. Paste it in Discord.</b> If you are free, work down the list at the bottom.</div>
+  <div class="sub"><b>Hit four targets. Tick nine boxes. Paste it in Discord.</b> If you are free, work down the list at the bottom.</div>
 </div>
 
 <h2>Your targets, every shift<span>hit these four</span></h2>
@@ -183,7 +188,7 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
 
 <h2>Before you log off<span>tick these, then hit Copy</span></h2>
 <div class="check">
-  <div class="cht"><b>Eight things, once.</b>
+  <div class="cht"><b>Nine things, once.</b>
     <span>Your numbers come out of Infloww — these are the ones only you know.</span></div>
   <div class="ci"><label><input type="checkbox" data-i="8"><span>I was clocked in on Infloww for
     my whole shift</span></label>
@@ -218,9 +223,14 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
       placeholder="u1234567 — $80 agreed, due Friday. Or: none this shift"
       aria-label="Which customs"><em>fan, price, when it's due</em></div></div>
 
+  <div class="ci"><label><input type="checkbox" data-i="9"><span>Mass messages sent this
+    shift</span></label>
+    <div class="ev"><input type="number" min="0" data-e="9" placeholder="0"
+      aria-label="How many mass messages"><em>how many went out &mdash; put 0 if none</em></div></div>
+
   <div class="ci"><label><input type="checkbox" data-i="7"><span>Handover written and passed to the
     next shift</span></label></div>
-  <div class="cf"><span id="cn">0 of 8</span><span>A box you tick with the field left blank prints
+  <div class="cf"><span id="cn">0 of 9</span><span>A box you tick with the field left blank prints
     as &ldquo;not recorded&rdquo;. Anything unticked prints too &mdash; say why in the
     handover.</span></div>
 </div>
@@ -288,8 +298,9 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
   var F = ["name", "shift", "notes"];
   var boxes = Array.prototype.slice.call(document.querySelectorAll(".ci input[data-i]"));
   var evs = Array.prototype.slice.call(document.querySelectorAll(".ci input[data-e]"));
-  var EVLAB = { 2: "Unopened offers chased", 3: "Buyers re-offered",
-                4: "Big spenders contacted", 6: "Customs" };
+  var EVLAB = { 2: "Unopened PPVs chased", 3: "Buyers sent another PPV",
+                4: "Big spenders contacted", 6: "Customs",
+                9: "Mass messages sent" };
 
   function ev(i) {
     var el = evs.filter(function (e) { return e.dataset.e === String(i); })[0];
@@ -335,7 +346,7 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
     L.push("Checklist: " + done + "/" + boxes.length +
            (done === boxes.length ? " — all done" : ""));
     L.push("");
-    [2, 3, 4, 6].forEach(function (i) {
+    [2, 3, 4, 6, 9].forEach(function (i) {
       var v = ev(i);
       L.push(EVLAB[i] + ": " + (v || "not recorded"));
     });
