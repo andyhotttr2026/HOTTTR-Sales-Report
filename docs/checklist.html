@@ -248,7 +248,8 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
 <label for="notes">Handover — what the next shift needs to know</label>
 <textarea id="notes" placeholder="Hot leads, whales mid-conversation, customs owed, anything broken or unfinished."></textarea>
 <div class="btns">
-  <button id="copy">Copy for Discord</button>
+  <button id="send">Submit shift</button>
+  <button class="ghost" id="copy">Copy for Discord</button>
   <button class="ghost" id="clear">Clear</button>
   <span class="flash" id="flash"></span>
 </div>
@@ -360,6 +361,47 @@ h2 span{display:block;margin-top:4px;font-weight:400;letter-spacing:.06em;
     $("out").textContent = L.join("\n");
     save();
   }
+  // Submitting goes to a Tally form. Every answer rides in on the query string
+  // as a hidden field, so the chatter taps Submit once and the row is recorded.
+  // Tally is used rather than an Artifact because an Artifact with a shared
+  // database is organisation-internal - a chatter without a Claude account
+  // cannot open one.
+  var FORM = "https://tally.so/r/QKLLlk";
+  function submitUrl() {
+    var n = $("name").value, s = $("shift").value;
+    if (!n || !s) return null;
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    var missed = boxes.filter(function (b) { return !b.checked; })
+      .map(function (b) {
+        return b.closest(".ci").querySelector("label span").textContent
+          .replace(/\s+/g, " ").trim();
+      });
+    var q = {
+      c_name: n, c_shift: s,
+      c_date: new Date().toLocaleDateString(undefined,
+        { weekday: "short", day: "numeric", month: "short" }),
+      c_done: done + "/" + boxes.length,
+      c_chased: ev(2), c_reoffer: ev(3), c_spenders: ev(4),
+      c_customs: ev(6), c_mms: ev(9),
+      c_missed: missed.join("; ") || "nothing",
+      c_handover: $("notes").value.trim() || "nothing outstanding"
+    };
+    return FORM + "?" + Object.keys(q).map(function (k) {
+      return k + "=" + encodeURIComponent(q[k]);
+    }).join("&");
+  }
+  $("send").addEventListener("click", function () {
+    var u = submitUrl();
+    if (!u) {
+      $("flash").textContent = "Pick your name and shift first";
+      setTimeout(function () { $("flash").textContent = ""; }, 3500);
+      return;
+    }
+    window.open(u, "_blank", "noopener");
+    $("flash").textContent = "Opening the submit form…";
+    setTimeout(function () { $("flash").textContent = ""; }, 3500);
+  });
+
   boxes.forEach(function (b) { b.addEventListener("change", build); });
   evs.forEach(function (e) { e.addEventListener("input", build); });
   F.forEach(function (f) {
