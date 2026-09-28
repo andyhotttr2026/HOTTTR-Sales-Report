@@ -85,7 +85,9 @@ def get(path):
     with urllib.request.urlopen(req, timeout=45) as r:
         return json.loads(r.read())
 
-def fetch(cid, s, e):
+MAX_SPAN_MS = 30 * 86400 * 1000   # the API 400s on anything wider than 31 days
+
+def _fetch_window(cid, s, e):
     out, cur = [], None
     while True:
         u = f"/v1/transactions?creatorId={cid}&limit=100&startTime={s}&endTime={e}"
@@ -95,6 +97,27 @@ def fetch(cid, s, e):
         cur = d.get("cursor")
         if not d.get("hasMore") or not cur: break
     return out
+
+def fetch(cid, s, e):
+    """Chunked at 30 days, de-duplicated across chunk edges.
+
+    The API rejects a span wider than 31 days with
+    400 'Query time span exceeds the maximum allowed days'. This report pulls 90
+    days for the price-trend baseline, so an unchunked call threw on EVERY
+    creator, every creator landed in `skipped`, and the run aborted with
+    "no data in the comparison window". Fixed 28 Sep 2026.
+    """
+    rows, seen, a = [], set(), s
+    while a <= e:
+        b = min(a + MAX_SPAN_MS, e)
+        for t in _fetch_window(cid, a, b):
+            k = t.get("id") or t.get("transactionId")
+            if k in seen:
+                continue
+            seen.add(k)
+            rows.append(t)
+        a = b + 1
+    return rows
 
 if not API_KEY or not OID:
     print("ERROR: INFLOWW_API_KEY / INFLOWW_OID not set"); sys.exit(1)
@@ -225,6 +248,29 @@ week_of    = notes.get("week_of", "")
 expected   = NOTES_WEEK.isoformat()
 stale      = week_of != expected
 missing  = [k for k in ("done", "not_done", "focus", "blocker", "stuck") if not notes.get(k)]
+
+# Direction words for the unlock-price note. These were hardcoded to "rose",
+# "above" and "the higher price", which printed "Price rose -21.4%" and an
+# inverted conclusion whenever the price fell - in a report that goes to an
+# outside consultant. Wording now follows the sign. Fixed 28 Sep 2026.
+PRICE_PCT = (avg(U30) - avg(U30P)) / avg(U30P) * 100 if avg(U30P) else 0
+VOL_PCT   = (U30["ppvn"] - U30P["ppvn"]) / U30P["ppvn"] * 100 if U30P["ppvn"] else 0
+BASE_PCT  = (avg(U30) - avg(U90)) / avg(U90) * 100 if avg(U90) else 0
+REV_PCT   = (U30["ppv"] - U30P["ppv"]) / U30P["ppv"] * 100 if U30P["ppv"] else 0
+PRICE_DIR = "rose" if PRICE_PCT >= 0 else "fell"
+VOL_DIR   = "rose" if VOL_PCT   >= 0 else "fell"
+REV_DIR   = "rose" if REV_PCT   >= 0 else "fell"
+BASE_DIR  = "above" if BASE_PCT >= 0 else "below"
+if PRICE_PCT >= 0 and VOL_PCT < 0:
+    PRICE_VERDICT = "The higher price has not so far offset the lower volume."
+elif PRICE_PCT < 0 and VOL_PCT < 0:
+    PRICE_VERDICT = ("Price and volume are falling together, so this is not a trade of one "
+                     "against the other.")
+elif PRICE_PCT < 0 and VOL_PCT >= 0:
+    PRICE_VERDICT = ("Volume is holding while the price falls, which points at discounting "
+                     "rather than weakening demand.")
+else:
+    PRICE_VERDICT = "Price and volume are both up."
 
 # ── Render ────────────────────────────────────────────────────────────────────
 
@@ -415,13 +461,13 @@ Net of the OnlyFans 20%; the price the fan pays is 1.25 times these figures.</di
                  ("Rolling 60 days", U60), ("Rolling 90 days", U90)])}
 </tbody></table>
 
-<div class="note"><b>Price rose {(avg(U30)-avg(U30P))/avg(U30P)*100:.1f}% and volume fell
-{abs((U30["ppvn"]-U30P["ppvn"])/U30P["ppvn"]*100):.1f}%.</b>
+<div class="note"><b>Price {PRICE_DIR} {abs(PRICE_PCT):.1f}% and volume {VOL_DIR}
+{abs(VOL_PCT):.1f}%.</b>
 The average unlock went {M(avg(U30P))} to {M(avg(U30))} against the prior 30 days, and sits
-{(avg(U30)-avg(U90))/avg(U90)*100:+.1f}% above the 90-day baseline of {M(avg(U90))}. Over the same
-period unlocks fell from {U30P["ppvn"]:,} to {U30["ppvn"]:,} and PPV revenue fell
-{abs((U30["ppv"]-U30P["ppv"])/U30P["ppv"]*100):.1f}%, from {M(U30P["ppv"])} to {M(U30["ppv"])}.
-The higher price has not so far offset the lower volume.</div>
+{abs(BASE_PCT):.1f}% {BASE_DIR} the 90-day baseline of {M(avg(U90))}. Over the same
+period unlocks {VOL_DIR} from {U30P["ppvn"]:,} to {U30["ppvn"]:,} and PPV revenue {REV_DIR}
+{abs(REV_PCT):.1f}%, from {M(U30P["ppv"])} to {M(U30["ppv"])}.
+{PRICE_VERDICT}</div>
 
 <h2>Where the price sits <span>unlocks by price band, net</span></h2>
 <table><thead><tr><th>Band</th><th>Last 30d</th><th>Share</th><th>PPV net</th>
