@@ -1,0 +1,168 @@
+<title>HOTTTR — OFMOS Mid-week Pulse · 27 Oct 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:A4;margin:12mm 11mm}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:"Segoe UI",Helvetica,Arial,sans-serif;color:#2b2430;background:#fff;
+     font-size:9.4pt;line-height:1.5;font-variant-numeric:tabular-nums}
+.page{page-break-after:always;position:relative;min-height:262mm;padding-bottom:12mm}
+.page:last-child{page-break-after:auto}
+.bar{display:flex;align-items:baseline;justify-content:space-between;
+     border-bottom:2.5px solid #d94f86;padding-bottom:5px;margin-bottom:16px}
+.wm{font-size:15pt;font-weight:800;letter-spacing:2.5px;color:#d94f86}
+.wm i{color:#f2a3c0;font-style:normal}
+.bar .pg{font-size:7.6pt;color:#8b7f8a;letter-spacing:1.4px;text-transform:uppercase}
+h1{font-size:19pt;color:#c23f74;font-weight:800;letter-spacing:-.4px;line-height:1.15}
+.sub{color:#8b7f8a;font-size:9pt;margin-top:5px}
+h2{font-size:11.4pt;color:#c23f74;font-weight:700;margin:19px 0 8px;padding-bottom:4px;
+   border-bottom:1px solid #f0d6e2;display:flex;align-items:center;justify-content:space-between}
+h2 span{font-size:7.4pt;color:#8b7f8a;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+p{margin:0 0 7px}.dim{color:#8b7f8a}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:14px 0}
+.mbox{border:1.5px solid #f0d6e2;border-radius:9px;overflow:hidden}
+.mbox .t{background:#fff5f9;padding:6px 12px;font-size:7.6pt;letter-spacing:1.3px;text-transform:uppercase;
+         color:#c23f74;font-weight:700;border-bottom:1px solid #f0d6e2}
+.mbox .b{padding:11px 12px 12px}
+.row{display:flex;justify-content:space-between;align-items:baseline;padding:3.5px 0}
+.row+.row{border-top:1px dotted #f0d6e2}
+.row .l{color:#8b7f8a;font-size:8.6pt}.row .v{font-weight:700;font-size:12.5pt}
+.row.g{margin-top:3px;padding-top:7px;border-top:1.5px solid #f7cddd}
+.row.g .l{color:#2b2430;font-weight:700;font-size:9pt}.row.g .v{font-size:15pt}
+.up{color:#1f7a52}.dn{color:#c9384f}
+table{width:100%;border-collapse:collapse;margin:5px 0 3px;font-size:8.7pt}
+th{background:#fff5f9;color:#c23f74;font-size:7.3pt;letter-spacing:.8px;text-transform:uppercase;
+   font-weight:700;padding:6px 7px;text-align:right;border-bottom:1.5px solid #f0d6e2}
+th:first-child{text-align:left}
+td{padding:5px 7px;border-bottom:1px solid #f7f0f4;text-align:right}
+td.k{text-align:left;font-weight:600}td.c{text-align:center}
+.pill{display:inline-block;padding:1px 7px;border-radius:9px;font-size:7.5pt;font-weight:700}
+.pill.up{background:#e4f4ec;color:#1f7a52}.pill.dn{background:#fbe7ea;color:#c9384f}
+.pill.neu{background:#f4eef1;color:#8b7f8a}
+.note{background:#fff5f9;border-left:3px solid #e8629a;padding:9px 12px;border-radius:0 6px 6px 0;
+      margin:10px 0;font-size:8.8pt}
+.note b{color:#c23f74}
+.note.grey{background:#f8f6f7;border-left-color:#c9bfc6}
+.note.grey b{color:#6c626a}
+tr.hl td{background:#fff8fb;font-weight:700}
+.alert{background:#fffaf0;border:1.5px solid #e0b45a;border-left:4px solid #d9932a;
+       border-radius:6px;padding:10px 13px;margin:12px 0;font-size:8.9pt;color:#6b5320}
+.alert b{color:#a86c12}
+ul{margin:3px 0 9px 17px}li{margin-bottom:5px}
+.q{border:1.5px solid #f0d6e2;border-radius:9px;padding:11px 13px;margin-bottom:11px;
+   page-break-inside:avoid;break-inside:avoid}
+li,.todo,.note,.alert{page-break-inside:avoid;break-inside:avoid}
+h2{page-break-after:avoid;break-after:avoid}
+.q .lbl{font-size:7.5pt;letter-spacing:1.2px;text-transform:uppercase;color:#c23f74;font-weight:700;margin-bottom:5px}
+.tag{display:inline-block;background:#f7cddd;color:#8a2f56;font-size:7.2pt;font-weight:700;
+     padding:1px 6px;border-radius:4px;letter-spacing:.6px}
+.todo{background:#fffdf3;border:1.5px dashed #e0c98a;border-radius:6px;padding:9px 12px;
+      margin:7px 0;font-size:8.6pt;color:#7a6a45}
+.todo b{color:#9a7d2e}
+.foot{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #f0d6e2;padding-top:5px;
+      font-size:7pt;color:#8b7f8a;display:flex;justify-content:space-between}
+@media screen{body{max-width:820px;margin:0 auto;padding:24px}
+  .page{min-height:auto;border-bottom:1px dashed #f0d6e2;margin-bottom:26px;padding-bottom:26px}
+  .page:last-child{border-bottom:none}.foot{position:static;margin-top:14px}}
+</style>
+<div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 1 / 6</div></div>
+<h1>OFMOS Mid-week Pulse — Numbers</h1>
+<div class="sub">Comparing the 7 days to 27 Oct against the 7 before it (rolling 7 days).
+All days in both windows are complete.</div>
+<div class="alert"><b>NEEDS INPUT BEFORE SENDING.</b> The figures below are live and correct. The written sections are not — the notes file is dated <b>2026-08-24</b> but this report covers the week starting <b>2026-10-19</b>. Update <code>ofmos_notes.json</code> and re-run. Nothing in this report has been auto-written on your behalf.</div>
+<div class="duo">
+  <div class="mbox"><div class="t">Revenue (net)</div><div class="b">
+    <div class="row"><span class="l">Last 7d &nbsp;21 Oct – 27 Oct</span><span class="v">$16,712.72</span></div>
+    <div class="row"><span class="l">Prior 7d &nbsp;14 Oct – 20 Oct</span><span class="v">$17,098.86</span></div>
+    <div class="row g"><span class="l">Growth</span><span class="v dn">-2.3%</span></div>
+  </div></div>
+  <div class="mbox"><div class="t">New subscribers</div><div class="b">
+    <div class="row"><span class="l">Last 7d</span><span class="v">212</span></div>
+    <div class="row"><span class="l">Prior 7d</span><span class="v">269</span></div>
+    <div class="row g"><span class="l">Growth</span><span class="v dn">-21.2%</span></div>
+  </div></div>
+</div>
+<div class="duo">
+  <div class="mbox"><div class="t">Quality &amp; mix</div><div class="b">
+    <div class="row"><span class="l">Renewals</span><span class="v">205</span></div>
+    <div class="row"><span class="l">Renewal rate</span><span class="v">49%</span></div>
+    <div class="row"><span class="l">PPV share of net</span><span class="v">81%</span></div>
+    <div class="row"><span class="l">Average unlock</span><span class="v">$26.17</span></div>
+  </div></div>
+  <div class="mbox"><div class="t">Month to date</div><div class="b">
+    <div class="row"><span class="l">Net (27 days)</span><span class="v">$67,624.57</span></div>
+    <div class="row"><span class="l">Average per day</span><span class="v">$2,504.61</span></div>
+    <div class="row g"><span class="l">Run-rate close</span><span class="v">$77,643</span></div>
+  </div></div>
+</div>
+<h2>Day by day <span>21 Oct – 27 Oct</span></h2>
+<table><thead><tr><th>Day</th><th>Net</th><th>New subs</th><th>Renewals</th></tr></thead><tbody><tr><td class="k">Wed 21 Oct</td><td class="n">$3,256.88</td><td class="n">24</td><td class="n">34</td></tr><tr><td class="k">Thu 22 Oct</td><td class="n">$2,981.91</td><td class="n">33</td><td class="n">37</td></tr><tr><td class="k">Fri 23 Oct</td><td class="n">$3,332.63</td><td class="n">38</td><td class="n">28</td></tr><tr><td class="k">Sat 24 Oct</td><td class="n">$2,010.08</td><td class="n">33</td><td class="n">30</td></tr><tr><td class="k">Sun 25 Oct</td><td class="n">$1,855.78</td><td class="n">40</td><td class="n">21</td></tr><tr><td class="k">Mon 26 Oct</td><td class="n">$1,641.68</td><td class="n">26</td><td class="n">33</td></tr><tr><td class="k">Tue 27 Oct</td><td class="n">$1,633.76</td><td class="n">18</td><td class="n">22</td></tr></tbody></table>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div><div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 2 / 6</div></div>
+<h1>Where it moved</h1>
+<div class="sub">Creator-level detail for the same two windows.</div>
+<h2>Creator performance <span>last 7d vs prior 7d</span></h2>
+<table><thead><tr><th>Creator</th><th>Last 7d</th><th>Prior 7d</th><th>Change</th><th>Share</th>
+<th>New subs</th></tr></thead><tbody><tr><td class="k">Emma Storm VIP</td><td class="n">$6,781.74</td><td class="n dim">$4,935.27</td><td class="c"><span class="pill up">+37%</span></td><td class="n dim">40.6%</td><td class="n dim">60</td></tr><tr><td class="k">Mina Van Girl Pottery</td><td class="n">$6,373.62</td><td class="n dim">$6,770.54</td><td class="c"><span class="pill dn">-6%</span></td><td class="n dim">38.1%</td><td class="n dim">75</td></tr><tr><td class="k">Fox Heart</td><td class="n">$1,626.16</td><td class="n dim">$3,073.30</td><td class="c"><span class="pill dn">-47%</span></td><td class="n dim">9.7%</td><td class="n dim">14</td></tr><tr><td class="k">Vega Fox</td><td class="n">$1,014.83</td><td class="n dim">$1,556.90</td><td class="c"><span class="pill dn">-35%</span></td><td class="n dim">6.1%</td><td class="n dim">22</td></tr><tr><td class="k">Alice Baby</td><td class="n">$377.49</td><td class="n dim">$168.76</td><td class="c"><span class="pill up">+124%</span></td><td class="n dim">2.3%</td><td class="n dim">27</td></tr><tr><td class="k">Kakao Chan</td><td class="n">$356.58</td><td class="n dim">$235.83</td><td class="c"><span class="pill up">+51%</span></td><td class="n dim">2.1%</td><td class="n dim">10</td></tr><tr><td class="k">Miya Rai</td><td class="n">$170.36</td><td class="n dim">$358.26</td><td class="c"><span class="pill dn">-52%</span></td><td class="n dim">1.0%</td><td class="n dim">4</td></tr><tr><td class="k">Islamah baddy</td><td class="n">$11.94</td><td class="n dim">$0.00</td><td class="c"><span class="pill neu">NEW</span></td><td class="n dim">0.1%</td><td class="n dim">0</td></tr></tbody></table>
+<h2>Contribution to the change in new subs <span>ranked by impact</span></h2><table><thead><tr><th>Creator</th><th>Prior 7d</th><th>Last 7d</th><th>Change</th><th>Share of move</th><th>Cumulative</th></tr></thead><tbody><tr><td class="k">Mina Van Girl Pottery</td><td class="n dim">139</td><td class="n">75</td><td class="n dn">-64</td><td class="n">112%</td><td class="n dim">112%</td></tr></tbody></table><div class="note"><b>Where the change came from.</b> New subscribers moved -57 overall. <b>Mina Van Girl Pottery</b> alone accounts for 112% of that move. Treat this as an account-level question, not an agency-wide one.</div>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div>
+
+<div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 3 / 6</div></div>
+<h1>Unlock price trend</h1>
+<div class="sub">Average price of a single PPV unlock, over rolling windows ending 27 Oct.
+Net of the OnlyFans 20%; the price the fan pays is 1.25 times these figures.</div>
+
+<h2>Rolling windows</h2>
+<table><thead><tr><th>Window</th><th>Unlocks</th><th>PPV net</th><th>Average unlock</th>
+<th>Last 30d vs this</th></tr></thead><tbody>
+<tr class=hl><td class="k">Last 30 days</td><td class="n">2,165</td><td class="n">$58,694.76</td><td class="n"><b>$27.11</b></td><td class="n">—</td></tr><tr><td class="k">Prior 30 days</td><td class="n">2,000</td><td class="n">$67,067.14</td><td class="n"><b>$33.53</b></td><td class="n">-19.2%</td></tr><tr><td class="k">Rolling 60 days</td><td class="n">4,165</td><td class="n">$125,761.90</td><td class="n"><b>$30.19</b></td><td class="n">-10.2%</td></tr><tr><td class="k">Rolling 90 days</td><td class="n">6,864</td><td class="n">$246,116.89</td><td class="n"><b>$35.86</b></td><td class="n">-24.4%</td></tr>
+</tbody></table>
+
+<div class="note"><b>Price fell 19.2% and volume rose
+8.2%.</b>
+The average unlock went $33.53 to $27.11 against the prior 30 days, and sits
+24.4% below the 90-day baseline of $35.86. Over the same
+period unlocks rose from 2,000 to 2,165 and PPV revenue fell
+12.5%, from $67,067.14 to $58,694.76.
+Volume is holding while the price falls, which points at discounting rather than weakening demand.</div>
+
+<h2>Where the price sits <span>unlocks by price band, net</span></h2>
+<table><thead><tr><th>Band</th><th>Last 30d</th><th>Share</th><th>PPV net</th>
+<th>Prior 30d</th><th>Share</th><th>Change</th></tr></thead><tbody>
+<tr><td class="k">under $20</td><td class="n">1,199</td><td class="n">55.4%</td><td class="n">$16,643.41</td><td class="n dim">849</td><td class="n dim">42.4%</td><td class="c"><span class="pill up">+41%</span></td></tr><tr><td class="k">$20 – 40</td><td class="n">657</td><td class="n">30.3%</td><td class="n">$19,094.44</td><td class="n dim">737</td><td class="n dim">36.9%</td><td class="c"><span class="pill dn">-11%</span></td></tr><tr><td class="k">$40 – 60</td><td class="n">162</td><td class="n">7.5%</td><td class="n">$7,895.75</td><td class="n dim">170</td><td class="n dim">8.5%</td><td class="c"><span class="pill dn">-5%</span></td></tr><tr><td class="k">$60 – 100</td><td class="n">87</td><td class="n">4.0%</td><td class="n">$6,614.94</td><td class="n dim">147</td><td class="n dim">7.3%</td><td class="c"><span class="pill dn">-41%</span></td></tr><tr><td class="k">$100 – 160</td><td class="n">39</td><td class="n">1.8%</td><td class="n">$5,086.22</td><td class="n dim">36</td><td class="n dim">1.8%</td><td class="c"><span class="pill up">+8%</span></td></tr><tr><td class="k">$160+</td><td class="n">21</td><td class="n">1.0%</td><td class="n">$3,360.00</td><td class="n dim">61</td><td class="n dim">3.0%</td><td class="c"><span class="pill dn">-66%</span></td></tr>
+</tbody></table>
+
+<div class="note"><b>The top band is doing the work.</b>
+Unlocks at $160 and above went from 61 to 21. They are
+1.0% of all unlocks and 5.7%
+of PPV revenue. Every other band fell in both count and share of revenue.</div>
+
+<div class="note grey"><b>Comparison caveat.</b> Creators who left during August lost their
+transaction history in Infloww. The prior-30 and 90-day windows therefore exclude them entirely,
+so this compares against a roster that no longer fully exists.</div>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div><div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 4 / 6</div></div>
+<h1>Progress</h1>
+<div class="sub">Written sections — entered by the team, not generated.
+They describe the same window as the figures above, <b>21 Oct – 27 Oct</b>.</div>
+<h2>What actually got done — and the results</h2>
+<ul><li>Diagnosed this week's decline precisely rather than by assertion. It is not acquisition. New subscribers rose 5.3%, paying fans fell 1.4% and subscription revenue was flat. The entire $15,788 fall is PPV, and it splits into 19% fewer unlocks and a 27.4% lower average unlock price.</li><li>Confirmed it from an independent second source. Per-chatter reporting shows PPVs sent down 12%, unlock rate down from 55.0% to 47.7%, and average sale down 26.5%. Transactions and chatter reporting agree on the price move to within a percentage point.</li><li>Measured what winning a lapsed fan back is actually worth, from real transactions rather than lifetime value: $69 median and $198 mean net over the 30 days after they return. That sizes a win-back programme at $1,000 to $2,000 a month, not the $130,000 a lifetime-value view implies.</li><li>Obtained fan-level retention data for the first time. Return odds fall from 30.2% to 10.4% between day 30 and day 45 of silence, measured across 36,056 observed silences.</li><li>Cohort quality is now measurable. Fans acquired in May are worth $37.92 by month three; fans acquired in June are worth $56.49. May was our largest intake and our worst, which is the first hard evidence we have on where acquisition spend should not go.</li></ul>
+<h2>What did not get done — and the effect</h2>
+<ul><li>Chatter onboarding still not built. This has been the named fix for three consecutive weeks and nothing has been designed. Median tenure of leavers remains around two weeks.</li><li>No PPV pricing standard. The average unlock fell 27% in seven days and there is no floor, no owner and no documented approach to measure that against.</li><li>Costs still not recorded anywhere, so we still have no margin and no cost per acquisition.</li><li>Creator history exports still not routine. When a creator departs their earnings history is deleted from Infloww permanently, and we have already lost one month's worth.</li></ul>
+<h2>#1 focus for the upcoming week</h2>
+<p><b>Hold the unlock price. It fell from $55.68 to $40.41 in a single week.</b></p><p><b>Why:</b> Price per unlock is now the largest single driver of revenue and the fastest moving. Volume fell 19% this week; price fell 27%. Unlike acquisition it needs no new instrumentation, and unlike the roster it can be measured daily, by chatter, starting immediately.</p><p><b>What it brings:</b> Two chatters improved conversion this week, to 75.0% and 55.7%, while the previous week's top three each fell more than 60%. If that spread is coachable it is the largest controllable number in the business.</p>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div><div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 5 / 6</div></div>
+<h1>Problems &amp; input needed</h1>
+<div class="sub">Written sections — entered by the team, not generated.</div>
+<h2>Biggest blocker</h2>
+<div class="q"><div class="lbl">Blocker</div><div>We still have a revenue view rather than a business view, and this week the gap became sharper rather than smaller. We evaluated an agency dashboard that already has fields for chatter payroll, creator splits and ad spend, and every one of them is zero. What was an instrumentation problem is now a data-entry problem, which means the constraint is ours rather than the tooling's.</div></div>
+<div class="q"><div class="lbl">If we had a magic wand</div><div>Know whether the unlock-rate spread is skill or account. It runs from 18.8% to 75.0% across the team. If it is skill, it is the biggest coachable number we have. If it is the account, we are ranking people on their allocation and every conclusion we draw from it is wrong.</div></div>
+<h2>Where we are stuck or unsure</h2>
+<ul><li>Whether the price collapse is deliberate discounting to close sales or unmanaged drift. We keep no pricing log, so we cannot distinguish a decision from an accident.</li><li>Two consecutive weeks of opposite failures. Last week acquisition fell 38% while monetisation held; this week monetisation fell 41% while acquisition held. We cannot tell whether the team is trading one against the other or whether it is coincidence.</li><li>Chatter retention. We know the median leaver lasts about two weeks and that this is not normal, but we still have no exit data, so any onboarding rebuild is designed blind.</li><li>Concentration on our top creator. She is 43.3% of net revenue and accounted for 68.3% of this week's entire decline. We still monitor this rather than address it.</li></ul>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div>
+
+<div class="page"><div class="bar"><div class="wm">HOTTTR<i>.</i></div><div class="pg">OFMOS Mid-week Pulse &nbsp;·&nbsp; 6 / 6</div></div>
+<h1>Input needed, continued</h1>
+<div class="sub">What would help most from the consultant's side.</div>
+<h2>Video ideas that would help us</h2>
+<div class="q"><div class="lbl">Idea 1</div><div>Chatter ramp and retention in practice. We have the Learn-Test-Apply-Advance principle but not the detail: what belongs in each gate, who signs off, and what a new chatter's first 30 days actually contains day by day.</div></div><div class="q"><div class="lbl">Idea 2</div><div>Running the price ladder wider rather than taller. Our own data supports the guardrail - 4 July made 93% more than 11 August on a lower average unlock because it had 107 buyers against 43. What does a per-session cap look like in practice, and how do you hold chatters to breadth when depth pays faster on the day?</div></div>
+<h2>Questions for the consultant</h2>
+<div class="q"><div class="lbl"><span class="tag">SALES</span></div><div>Our average unlock fell 27% in a single week. What does a workable price floor look like when chatters are commission-motivated to close, and how do you enforce one without killing the ladder that produces our best days?</div></div><div class="q"><div class="lbl"><span class="tag">OPERATIONS</span></div><div>Unlock rates across our team run from 18.8% to 75.0%. How do you separate operator skill from account quality well enough to coach it, short of a controlled rotation we cannot afford to run?</div></div><div class="q"><div class="lbl"><span class="tag">RETENTION</span></div><div>We can now see the 30-day cliff in our own data. What is the standard cadence for touching a high-value fan before they reach it, and who should own that - the chatter on the account, or a dedicated win-back queue worked by someone else?</div></div>
+<div class="foot"><span>Source: Infloww API · net of OnlyFans 20% · refunds excluded · Europe/London days</span><span>Generated 28 Oct 2026, 11:16 GMT</span></div></div>
